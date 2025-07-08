@@ -1,0 +1,2 @@
+fn sha256(input):
+    say "hashlib.sha256 called"
