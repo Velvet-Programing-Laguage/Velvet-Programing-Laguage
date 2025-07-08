@@ -1,0 +1,5 @@
+fn parse(yaml_str):
+    say "yaml.parse called"
+
+fn stringify(data):
+    say "yaml.stringify called"
