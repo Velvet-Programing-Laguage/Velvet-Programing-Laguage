@@ -1,2 +1,2 @@
 fn ping(host):
-    say "net.ping called"
+    say "net.ping called with host"
