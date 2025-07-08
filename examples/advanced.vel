@@ -1,18 +1,17 @@
+import "velvet-std"
+
 set counter = 0
 
-say "Counter initialized to " + counter
-
-if counter = 0:
-    say "Starting app"
-else:
-    say "Counter is non-zero"
+fn increment(n):
+    set counter = counter + n
+    say "Counter: " + counter
 
 do window:
-    title "Advanced Velvet App"
+    title "Advanced App"
     size 800, 600
+    textinput "name" "Enter your name"
     button "Increment" action:
-        set counter = counter + 1
-        say "Counter: " + counter
+        increment(1)
     button "Reset" action:
         set counter = 0
-        say "Counter reset to " + counter
+        say "Counter reset"
