@@ -1,2 +1,2 @@
 fn init():
-    say "tk.init called"
+    say "tk.init called via JNI"
