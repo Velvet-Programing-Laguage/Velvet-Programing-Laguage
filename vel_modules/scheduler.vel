@@ -1,0 +1,2 @@
+fn run(task, interval):
+    say "scheduler.run called"
