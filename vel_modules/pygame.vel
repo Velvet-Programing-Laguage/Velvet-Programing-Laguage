@@ -1,2 +1,2 @@
 fn init():
-    say "pygame.init called"
+    say "pygame.init called via JNI"
