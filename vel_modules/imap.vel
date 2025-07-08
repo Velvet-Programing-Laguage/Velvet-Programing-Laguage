@@ -1,0 +1,2 @@
+fn fetch(server, user, pass):
+    say "imap.fetch called"
