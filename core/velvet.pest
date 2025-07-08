@@ -1,16 +1,25 @@
 program = { statement* }
-statement = { say | set | if_stmt | for_stmt | def | import }
-say = { "say" ~ STRING }
-set = { "set" ~ IDENT ~ "=" ~ (STRING | NUMBER | call) }
-if_stmt = { "if" ~ (STRING | NUMBER | call) ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~ ("else" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT)? }
-for_stmt = { "for" ~ IDENT ~ "=" ~ NUMBER ~ "to" ~ NUMBER ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
-def = { "def" ~ IDENT ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+statement = { say | let | const | if_stmt | for_stmt | fn | import | try_stmt | struct | match_stmt | return_stmt }
+say = { "say" ~ expr }
+let = { "let" ~ IDENT ~ "=" ~ expr }
+const = { "const" ~ IDENT ~ "=" ~ expr }
+if_stmt = { "if" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~ ("else" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT)? }
+for_stmt = { "for" ~ IDENT ~ "in" ~ NUMBER ~ ".." ~ NUMBER ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+fn = { "fn" ~ IDENT ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
 import = { "import" ~ STRING }
-call = { IDENT ~ "(" ~ ((STRING | NUMBER | call) ~ ("," ~ (STRING | NUMBER | call))*)? ~ ")" }
+try_stmt = { "try" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~ "catch" ~ IDENT ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+struct = { "struct" ~ IDENT ~ ":" ~ NEWLINE ~ INDENT ~ (IDENT ~ ":" ~ type)+ ~ DEDENT }
+match_stmt = { "match" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ (pattern ~ "=>" ~ statement+)+ ~ DEDENT }
+return_stmt = { "return" ~ expr }
+expr = { STRING | NUMBER | IDENT | call | list }
+call = { IDENT ~ "(" ~ ((STRING | NUMBER | call | list) ~ ("," ~ (STRING | NUMBER | call | list))*)? ~ ")" }
+list = { "[" ~ ((STRING | NUMBER | call) ~ ("," ~ (STRING | NUMBER | call))*)? ~ "]" }
+type = { "String" | "Number" | "List" }
 STRING = { "\"" ~ (!"\"")* ~ "\"" }
 NUMBER = { ASCII_DIGIT+ ("." ~ ASCII_DIGIT+)? }
 IDENT = { ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 NEWLINE = { "\n" }
 INDENT = { "    " }
 DEDENT = { "" }
-WHITESPACE = _{ " " | "\t" | NEWLINE }
+COMMENT = _{ "#" ~ (!NEWLINE)* ~ NEWLINE }
+WHITESPACE = _{ " " | "\t" | NEWLINE | COMMENT }
