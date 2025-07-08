@@ -1,0 +1,2 @@
+fn connect(db_path):
+    say "db.connect called"
