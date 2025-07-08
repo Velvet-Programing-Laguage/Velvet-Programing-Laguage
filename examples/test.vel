@@ -1,0 +1,13 @@
+import "velvet-std"
+
+set result = str_upper("test")
+if result = "TEST":
+    say "Test str_upper passed"
+else:
+    say "Test str_upper failed"
+
+set sqrt = math_sqrt(16)
+if sqrt = 4:
+    say "Test math_sqrt passed"
+else:
+    say "Test math_sqrt failed"
