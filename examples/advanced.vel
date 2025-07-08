@@ -1,0 +1,18 @@
+set counter = 0
+
+say "Counter initialized to " + counter
+
+if counter = 0:
+    say "Starting app"
+else:
+    say "Counter is non-zero"
+
+do window:
+    title "Advanced Velvet App"
+    size 800, 600
+    button "Increment" action:
+        set counter = counter + 1
+        say "Counter: " + counter
+    button "Reset" action:
+        set counter = 0
+        say "Counter reset to " + counter
