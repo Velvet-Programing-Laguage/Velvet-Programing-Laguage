@@ -1,0 +1,5 @@
+fn parse(json_str):
+    say "json.parse called"
+
+fn stringify(data):
+    say "json.stringify called"
