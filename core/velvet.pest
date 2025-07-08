@@ -1,14 +1,12 @@
 program = { statement* }
-statement = { say | set | if_stmt | for_stmt | function | import }
-say = { "say" ~ expr }
-set = { "set" ~ IDENT ~ "=" ~ expr }
-if_stmt = { "if" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~ ("else" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT)? }
-for_stmt = { "for" ~ IDENT ~ "in" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
-function = { "fn" ~ IDENT ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+statement = { say | set | if_stmt | for_stmt | def | import }
+say = { "say" ~ STRING }
+set = { "set" ~ IDENT ~ "=" ~ (STRING | NUMBER | call) }
+if_stmt = { "if" ~ (STRING | NUMBER | call) ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~ ("else" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT)? }
+for_stmt = { "for" ~ IDENT ~ "=" ~ NUMBER ~ "to" ~ NUMBER ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+def = { "def" ~ IDENT ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
 import = { "import" ~ STRING }
-expr = { STRING | NUMBER | IDENT | arith_expr | call }
-call = { IDENT ~ "(" ~ (expr ~ ("," ~ expr)*)? ~ ")" }
-arith_expr = { expr ~ ("+" | "-") ~ expr }
+call = { IDENT ~ "(" ~ ((STRING | NUMBER | call) ~ ("," ~ (STRING | NUMBER | call))*)? ~ ")" }
 STRING = { "\"" ~ (!"\"")* ~ "\"" }
 NUMBER = { ASCII_DIGIT+ ("." ~ ASCII_DIGIT+)? }
 IDENT = { ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
