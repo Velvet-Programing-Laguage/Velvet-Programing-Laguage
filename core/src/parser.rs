@@ -1,6 +1,5 @@
 use pest::Parser;
 use pest_derive::Parser;
-use serde_json::{json, Value};
 use std::error::Error;
 use std::fmt;
 
@@ -10,12 +9,17 @@ pub struct VelvetParser;
 
 #[derive(Debug, Clone)]
 pub enum Node {
-    Say(String),
-    Set(String, Expr),
+    Say(Expr),
+    Let(String, Expr),
+    Const(String, Expr),
     If(Expr, Vec<Node>, Option<Vec<Node>>),
     For(String, i32, i32, Vec<Node>),
-    Def(String, Vec<String>, Vec<Node>),
+    Fn(String, Vec<String>, Vec<Node>),
     Import(String),
+    Try(Vec<Node>, String, Vec<Node>),
+    Struct(String, Vec<(String, Type)>),
+    Match(Expr, Vec<(Pattern, Vec<Node>)>),
+    Return(Expr),
     Window(Vec<WindowProp>),
 }
 
@@ -32,6 +36,20 @@ pub enum Expr {
     String(String),
     Number(f64),
     Call(String, Vec<Expr>),
+    List(Vec<Expr>),
+}
+
+#[derive(Debug, Clone)]
+pub enum Type {
+    String,
+    Number,
+    List,
+}
+
+#[derive(Debug, Clone)]
+pub enum Pattern {
+    String(String),
+    Number(f64),
 }
 
 #[derive(Debug)]
@@ -54,14 +72,20 @@ pub fn parse_velvet(code: &str) -> Result<Vec<Node>, Box<dyn Error>> {
     for pair in pairs {
         match pair.as_rule() {
             Rule::say => {
-                let str = pair.into_inner().next().unwrap().as_str().trim_matches('"').to_string();
-                nodes.push(Node::Say(str));
+                let expr = parse_expr(pair.into_inner().next().unwrap())?;
+                nodes.push(Node::Say(expr));
             }
-            Rule::set => {
+            Rule::let => {
                 let mut inner = pair.into_inner();
                 let ident = inner.next().unwrap().as_str().to_string();
                 let expr = parse_expr(inner.next().unwrap())?;
-                nodes.push(Node::Set(ident, expr));
+                nodes.push(Node::Let(ident, expr));
+            }
+            Rule::const => {
+                let mut inner = pair.into_inner();
+                let ident = inner.next().unwrap().as_str().to_string();
+                let expr = parse_expr(inner.next().unwrap())?;
+                nodes.push(Node::Const(ident, expr));
             }
             Rule::if_stmt => {
                 let mut inner = pair.into_inner();
@@ -96,7 +120,7 @@ pub fn parse_velvet(code: &str) -> Result<Vec<Node>, Box<dyn Error>> {
                     .collect::<Result<Vec<_>, _>>()?;
                 nodes.push(Node::For(var, start, end, body));
             }
-            Rule::def => {
+            Rule::fn => {
                 let mut inner = pair.into_inner();
                 let name = inner.next().unwrap().as_str().to_string();
                 let params = inner
@@ -112,11 +136,69 @@ pub fn parse_velvet(code: &str) -> Result<Vec<Node>, Box<dyn Error>> {
                     .filter(|p| p.as_rule() != Rule::DEDENT)
                     .map(parse_statement)
                     .collect::<Result<Vec<_>, _>>()?;
-                nodes.push(Node::Def(name, params, body));
+                nodes.push(Node::Fn(name, params, body));
             }
             Rule::import => {
                 let module = pair.into_inner().next().unwrap().as_str().trim_matches('"').to_string();
                 nodes.push(Node::Import(module));
+            }
+            Rule::try_stmt => {
+                let mut inner = pair.into_inner();
+                let try_body = inner
+                    .next()
+                    .unwrap()
+                    .into_inner()
+                    .filter(|p| p.as_rule() != Rule::DEDENT)
+                    .map(parse_statement)
+                    .collect::<Result<Vec<_>, _>>()?;
+                let catch_var = inner.next().unwrap().as_str().to_string();
+                let catch_body = inner
+                    .next()
+                    .unwrap()
+                    .into_inner()
+                    .filter(|p| p.as_rule() != Rule::DEDENT)
+                    .map(parse_statement)
+                    .collect::<Result<Vec<_>, _>>()?;
+                nodes.push(Node::Try(try_body, catch_var, catch_body));
+            }
+            Rule::struct => {
+                let mut inner = pair.into_inner();
+                let name = inner.next().unwrap().as_str().to_string();
+                let fields = inner
+                    .filter(|p| p.as_rule() != Rule::DEDENT)
+                    .map(|p| {
+                        let mut field = p.into_inner();
+                        let field_name = field.next().unwrap().as_str().to_string();
+                        let field_type = match field.next().unwrap().as_str() {
+                            "String" => Type::String,
+                            "Number" => Type::Number,
+                            "List" => Type::List,
+                            _ => Type::String,
+                        };
+                        Ok((field_name, field_type))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                nodes.push(Node::Struct(name, fields));
+            }
+            Rule::match_stmt => {
+                let mut inner = pair.into_inner();
+                let expr = parse_expr(inner.next().unwrap())?;
+                let branches = inner
+                    .filter(|p| p.as_rule() != Rule::DEDENT)
+                    .map(|p| {
+                        let mut branch = p.into_inner();
+                        let pattern = parse_pattern(branch.next().unwrap())?;
+                        let body = branch
+                            .map(parse_statement)
+                            .collect::<Result<Vec<_>, _>>()?;
+                        Ok((pattern, body))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                nodes.push(Node::Match(expr, branches));
+            }
+            Rule::return_stmt => {
+                let expr = parse_expr(pair.into_inner().next().unwrap())?;
+                nodes.push(Node::Return(expr));
             }
             Rule::window => {
                 let mut props = Vec::new();
@@ -171,6 +253,14 @@ fn parse_expr(pair: pest::iterators::Pair<Rule>) -> Result<Expr, Box<dyn Error>>
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(Expr::Call(name, args))
         }
+        Rule::list => {
+            let items = pair
+                .into_inner()
+                .filter(|p| p.as_rule() != Rule::EOI)
+                .map(parse_expr)
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Expr::List(items))
+        }
         _ => Err(Box::new(ParseError {
             message: format!("Invalid expression: {}", pair.as_str()),
         })),
@@ -180,14 +270,20 @@ fn parse_expr(pair: pest::iterators::Pair<Rule>) -> Result<Expr, Box<dyn Error>>
 fn parse_statement(pair: pest::iterators::Pair<Rule>) -> Result<Node, Box<dyn Error>> {
     match pair.as_rule() {
         Rule::say => {
-            let str = pair.into_inner().next().unwrap().as_str().trim_matches('"').to_string();
-            Ok(Node::Say(str))
+            let expr = parse_expr(pair.into_inner().next().unwrap())?;
+            Ok(Node::Say(expr))
         }
-        Rule::set => {
+        Rule::let => {
             let mut inner = pair.into_inner();
             let ident = inner.next().unwrap().as_str().to_string();
             let expr = parse_expr(inner.next().unwrap())?;
-            Ok(Node::Set(ident, expr))
+            Ok(Node::Let(ident, expr))
+        }
+        Rule::const => {
+            let mut inner = pair.into_inner();
+            let ident = inner.next().unwrap().as_str().to_string();
+            let expr = parse_expr(inner.next().unwrap())?;
+            Ok(Node::Const(ident, expr))
         }
         Rule::for_stmt => {
             let mut inner = pair.into_inner();
@@ -200,7 +296,7 @@ fn parse_statement(pair: pest::iterators::Pair<Rule>) -> Result<Node, Box<dyn Er
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(Node::For(var, start, end, body))
         }
-        Rule::def => {
+        Rule::fn => {
             let mut inner = pair.into_inner();
             let name = inner.next().unwrap().as_str().to_string();
             let params = inner
@@ -216,10 +312,59 @@ fn parse_statement(pair: pest::iterators::Pair<Rule>) -> Result<Node, Box<dyn Er
                 .filter(|p| p.as_rule() != Rule::DEDENT)
                 .map(parse_statement)
                 .collect::<Result<Vec<_>, _>>()?;
-            Ok(Node::Def(name, params, body))
+            Ok(Node::Fn(name, params, body))
+        }
+        Rule::try_stmt => {
+            let mut inner = pair.into_inner();
+            let try_body = inner
+                .next()
+                .unwrap()
+                .into_inner()
+                .filter(|p| p.as_rule() != Rule::DEDENT)
+                .map(parse_statement)
+                .collect::<Result<Vec<_>, _>>()?;
+            let catch_var = inner.next().unwrap().as_str().to_string();
+            let catch_body = inner
+                .next()
+                .unwrap()
+                .into_inner()
+                .filter(|p| p.as_rule() != Rule::DEDENT)
+                .map(parse_statement)
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Node::Try(try_body, catch_var, catch_body))
+        }
+        Rule::match_stmt => {
+            let mut inner = pair.into_inner();
+            let expr = parse_expr(inner.next().unwrap())?;
+            let branches = inner
+                .filter(|p| p.as_rule() != Rule::DEDENT)
+                .map(|p| {
+                    let mut branch = p.into_inner();
+                    let pattern = parse_pattern(branch.next().unwrap())?;
+                    let body = branch
+                        .map(parse_statement)
+                        .collect::<Result<Vec<_>, _>>()?;
+                    Ok((pattern, body))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Node::Match(expr, branches))
+        }
+        Rule::return_stmt => {
+            let expr = parse_expr(pair.into_inner().next().unwrap())?;
+            Ok(Node::Return(expr))
         }
         _ => Err(Box::new(ParseError {
             message: format!("Invalid statement: {}", pair.as_str()),
+        })),
+    }
+}
+
+fn parse_pattern(pair: pest::iterators::Pair<Rule>) -> Result<Pattern, Box<dyn Error>> {
+    match pair.as_rule() {
+        Rule::STRING => Ok(Pattern::String(pair.as_str().trim_matches('"').to_string())),
+        Rule::NUMBER => Ok(Pattern::Number(pair.as_str().parse()?)),
+        _ => Err(Box::new(ParseError {
+            message: format!("Invalid pattern: {}", pair.as_str()),
         })),
     }
                 }
