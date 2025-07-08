@@ -1,0 +1,8 @@
+{
+    "name": "velvet-project",
+    "version": "0.3.0",
+    "dependencies": {
+        "velvet-std": "^1.0.0",
+        "velvet-ui": "^0.1.0"
+    }
+}
