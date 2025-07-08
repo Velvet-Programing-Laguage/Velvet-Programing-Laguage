@@ -34,7 +34,12 @@ impl Interpreter {
     pub fn load_module(&mut self, module: &str) -> Result<(), Box<dyn std::error::Error>> {
         if !self.modules.contains_key(module) {
             let path = format!("vel_modules/{}.vel", module);
-            let code = fs::read_to_string(&path)?;
+            let code = fs::read_to_string(&path).map_err(|e| {
+                Box::new(std::io::Error::new(
+                    e.kind(),
+                    format!("Failed to load module {}: {}", module, e),
+                ))
+            })?;
             let ast = crate::parser::parse_velvet(&code)?;
             self.modules.insert(module.to_string(), ast);
         }
@@ -56,6 +61,10 @@ impl Interpreter {
                     self.env.insert(ident, value);
                 }
                 Node::Const(ident, expr) => {
+                    if self.env.contains_key(&ident) {
+                        println!("Error: Cannot redefine constant {}", ident);
+                        continue;
+                    }
                     let value = self.eval_expr(expr);
                     self.env.insert(ident, value);
                 }
@@ -80,8 +89,8 @@ impl Interpreter {
                     if let Err(e) = self.load_module(&module) {
                         println!("Error loading module {}: {}", module, e);
                     } else {
-                        if let Some(module_nodes) = self.modules.get(&module) {
-                            gui_data.extend(self.execute(module_nodes.clone()));
+                        if let Some(module_nodes) = self.modules.get(&module).cloned() {
+                            gui_data.extend(self.execute(module_nodes));
                         }
                     }
                 }
@@ -218,4 +227,4 @@ impl RuntimeValue {
             RuntimeValue::Function(name, _, _) => format!("Function({})", name),
         }
     }
-}
+                        }
