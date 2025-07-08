@@ -1,0 +1,2 @@
+fn resize(path, width, height):
+    say "image.resize called"
