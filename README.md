@@ -78,8 +78,33 @@ Go to file
 cd Velvet-Programing-Laguage
 ```
 
+
+# FOR LINUX AND MACOS
+
+
+Add Sudo Permission for script
+
+```bash
+chmod +x install.sh
+```
+
 Run Install.sh
 
 ```bash
-install.sh
+./install.sh
+```
+
+
+# FOR WINDOWS
+
+Add Sudo Permission For Script
+
+```bash
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+Run Install.ps1
+
+```bash
+.\install.ps1
 ```
