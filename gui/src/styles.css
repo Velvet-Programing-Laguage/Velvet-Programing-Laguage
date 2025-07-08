@@ -1,0 +1,10 @@
+/* Custom styles */
+#app {
+    padding: 20px;
+}
+button {
+    margin: 10px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
