@@ -61,6 +61,7 @@ func main() {
         Use:   "start",
         Short: "Run Velvet project",
         Run: func(cmd *cobra.Command, args []string) {
+            color.Cyan("Starting Velvet project...")
             go func() {
                 tauriCmd := exec.Command("npm", "run", "tauri", "dev")
                 tauriCmd.Dir = "gui"
@@ -76,6 +77,8 @@ func main() {
             coreCmd.Stderr = os.Stderr
             if err := coreCmd.Run(); err != nil {
                 color.Red("Error running core: %v", err)
+            } else {
+                color.Green("Velvet project started successfully")
             }
         },
     }
@@ -84,13 +87,15 @@ func main() {
         Use:   "debug",
         Short: "Run Velvet project in debug mode",
         Run: func(cmd *cobra.Command, args []string) {
-            color.Yellow("Debug mode: Logging enabled")
+            color.Yellow("Starting Velvet project in debug mode...")
             coreCmd := exec.Command("./target/debug/velvet-core", "main.vel")
             coreCmd.Dir = "core"
             coreCmd.Stdout = os.Stdout
             coreCmd.Stderr = os.Stderr
             if err := coreCmd.Run(); err != nil {
                 color.Red("Error running debug: %v", err)
+            } else {
+                color.Green("Debug session completed")
             }
         },
     }
@@ -99,6 +104,7 @@ func main() {
         Use:   "install",
         Short: "Install Velvet dependencies",
         Run: func(cmd *cobra.Command, args []string) {
+            color.Cyan("Reading vel.json configuration...")
             configData, err := ioutil.ReadFile("vel.json")
             if err != nil {
                 color.Red("Error reading vel.json: %v", err)
@@ -113,7 +119,7 @@ func main() {
             client := resty.New()
             count := len(config.Dependencies)
             bar := pb.StartNew(count)
-            bar.SetTemplateString(`{{ string . "prefix" | green }} {{ bar . "[" "=" ">" "-" "]"}} {{counters .}} {{percent .}} {{rtime . "ETA %s"}}`)
+            bar.SetTemplateString(`{{ string . "prefix" | green }} {{ bar . "[" "=" ">" "-" "]"}} {{counters .}} {{percent .}} {{rtime . "ETA %s"}} {{speed . " %s/s"}}`)
 
             for name, version := range config.Dependencies {
                 bar.Set("prefix", fmt.Sprintf("Installing %s@%s ", name, version))
@@ -128,16 +134,18 @@ func main() {
                     bar.Increment()
                     continue
                 }
-                if err := ioutil.WriteFile(filepath.Join("vel_modules", name+".vel"), resp.Body(), 0644); err != nil {
-                    color.Red("Error writing %s.vel: %v", name, err)
+                modulePath := filepath.Join("vel_modules", name+".vel")
+                if err := ioutil.WriteFile(modulePath, resp.Body(), 0644); err != nil {
+                    color.Red("Error writing %s: %v", modulePath, err)
                     bar.Increment()
                     continue
                 }
+                color.Green("Successfully installed %s@%s", name, version)
                 bar.Increment()
-                time.Sleep(time.Millisecond * 500) // Simulate network delay
+                time.Sleep(time.Millisecond * 300) // Simulate network delay
             }
             bar.Finish()
-            color.Green("Dependencies installed successfully")
+            color.Green("All dependencies installed successfully")
         },
     }
 
@@ -145,9 +153,14 @@ func main() {
         Use:   "test",
         Short: "Run Velvet tests",
         Run: func(cmd *cobra.Command, args []string) {
+            color.Cyan("Discovering test files...")
             testFiles, err := filepath.Glob("examples/test*.vel")
             if err != nil {
                 color.Red("Error finding test files: %v", err)
+                return
+            }
+            if len(testFiles) == 0 {
+                color.Yellow("No test files found")
                 return
             }
             for _, file := range testFiles {
@@ -162,6 +175,7 @@ func main() {
                     color.Green("Test %s passed", file)
                 }
             }
+            color.Green("Test suite completed")
         },
     }
 
@@ -171,6 +185,7 @@ func main() {
         Args:  cobra.ExactArgs(1),
         Run: func(cmd *cobra.Command, args []string) {
             file := args[0]
+            color.Cyan("Running Velvet file: %s", file)
             if _, err := os.Stat(file); os.IsNotExist(err) {
                 color.Red("File %s does not exist", file)
                 return
@@ -181,6 +196,8 @@ func main() {
             coreCmd.Stderr = os.Stderr
             if err := coreCmd.Run(); err != nil {
                 color.Red("Error running %s: %v", file, err)
+            } else {
+                color.Green("File %s executed successfully", file)
             }
         },
     }
