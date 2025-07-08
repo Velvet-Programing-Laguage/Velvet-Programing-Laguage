@@ -1,0 +1,2 @@
+fn predict(model, input):
+    say "ai.predict called"
