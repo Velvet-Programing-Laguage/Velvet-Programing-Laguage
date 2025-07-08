@@ -1,0 +1,2 @@
+fn query(db_path, query):
+    say "sqlite.query called"
