@@ -1,9 +1,3 @@
-import "velvet-std"
+import "string"
 
-say str_upper("Hello, Velvet!")
-
-do window:
-    title "Simple App"
-    size 800, 600
-    button "Greet" action:
-        say "Hello, user!"
+say string_upper("hello, velvet!")
