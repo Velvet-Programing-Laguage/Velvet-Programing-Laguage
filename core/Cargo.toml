@@ -22,18 +22,18 @@ qrcode = "0.12"
 rodio = "0.17"
 uuid = "1.8"
 regex = "1.10"
-jni = "0.21" # Added for JNI integration
-rustls = "0.21" # Added for ssl
-imap = "2.4" # Added for imap
-ftp = "3.0" # Added for ftp
-lettre = "0.10" # Added for smtplib, email
-ping = "0.4" # Added for net
-sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio"] } # Added for db
-clap = "4.4" # Added for argparse
-tch = "0.10" # Added for ai (PyTorch Rust bindings)
-bitcoin = "0.29" # Added for crypto_wallet
+jni = "0.21"
+rustls = "0.21"
+imap = "2.4"
+ftp = "3.0"
+lettre = "0.10"
+ping = "0.4"
+sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio"] }
+clap = "4.4"
+tch = "0.10"
+bitcoin = "0.29"
 
 [lib]
 name = "velvet_core"
 path = "src/lib.rs"
-crate-type = ["cdylib"] # Required for JNI
+crate-type = ["cdylib"]
