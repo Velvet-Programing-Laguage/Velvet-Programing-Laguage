@@ -1,7 +1,7 @@
 pub mod parser;
 pub mod interpreter;
-pub mod stdlib;
+pub mod stdlib_1;
+pub mod stdlib_2;
 
-pub use parser::{Node, WindowProp, Expr, Type};
-pub use interpreter::Interpreter;
-pub use stdlib::register_stdlib;
+pub use parser::parse_velvet;
+pub use interpreter::{Interpreter, RuntimeValue};
