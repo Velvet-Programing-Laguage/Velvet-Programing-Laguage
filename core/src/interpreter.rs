@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::fs;
-use crate::parser::{Node, WindowProp, Expr};
+use crate::parser::{Node, WindowProp, Expr, Type, Pattern};
 use crate::stdlib::{register_stdlib, stdlib_call};
 
 #[derive(Clone)]
@@ -9,12 +9,15 @@ pub enum RuntimeValue {
     String(String),
     Number(f64),
     Bool(bool),
+    List(Vec<RuntimeValue>),
+    Struct(String, HashMap<String, RuntimeValue>),
     Function(String, Vec<String>, Vec<Node>),
 }
 
 pub struct Interpreter {
     env: HashMap<String, RuntimeValue>,
     modules: HashMap<String, Vec<Node>>,
+    last_return: Option<RuntimeValue>,
 }
 
 impl Interpreter {
@@ -22,6 +25,7 @@ impl Interpreter {
         let mut interpreter = Interpreter {
             env: HashMap::new(),
             modules: HashMap::new(),
+            last_return: None,
         };
         register_stdlib(&mut interpreter.env);
         interpreter
@@ -41,10 +45,17 @@ impl Interpreter {
         let mut gui_data = Vec::new();
         for node in nodes {
             match node {
-                Node::Say(str) => {
-                    println!("{}", str);
+                Node::Say(expr) => {
+                    let value = self.eval_expr(expr);
+                    if let RuntimeValue::String(s) = value {
+                        println!("{}", s);
+                    }
                 }
-                Node::Set(ident, expr) => {
+                Node::Let(ident, expr) => {
+                    let value = self.eval_expr(expr);
+                    self.env.insert(ident, value);
+                }
+                Node::Const(ident, expr) => {
                     let value = self.eval_expr(expr);
                     self.env.insert(ident, value);
                 }
@@ -62,7 +73,7 @@ impl Interpreter {
                         gui_data.extend(self.execute(body.clone()));
                     }
                 }
-                Node::Def(name, params, body) => {
+                Node::Fn(name, params, body) => {
                     self.env.insert(name, RuntimeValue::Function(name, params, body));
                 }
                 Node::Import(module) => {
@@ -73,6 +84,43 @@ impl Interpreter {
                             gui_data.extend(self.execute(module_nodes.clone()));
                         }
                     }
+                }
+                Node::Try(try_body, catch_var, catch_body) => {
+                    match self.execute(try_body.clone()) {
+                        _ if self.last_return.is_some() => {
+                            gui_data.extend(self.last_return.take().map(|v| json!({"type": "return", "value": v.to_string()})).into_iter());
+                        }
+                        _ => {
+                            self.env.insert(catch_var.clone(), RuntimeValue::String("error".to_string()));
+                            gui_data.extend(self.execute(catch_body));
+                        }
+                    }
+                }
+                Node::Struct(name, fields) => {
+                    let mut struct_fields = HashMap::new();
+                    for (field_name, _field_type) in fields {
+                        struct_fields.insert(field_name, RuntimeValue::String("".to_string()));
+                    }
+                    self.env.insert(name, RuntimeValue::Struct(name, struct_fields));
+                }
+                Node::Match(expr, branches) => {
+                    let value = self.eval_expr(expr);
+                    for (pattern, body) in branches {
+                        match (&value, &pattern) {
+                            (RuntimeValue::String(v), Pattern::String(p)) if v == p => {
+                                gui_data.extend(self.execute(body));
+                                break;
+                            }
+                            (RuntimeValue::Number(v), Pattern::Number(p)) if (v - p).abs() < f64::EPSILON => {
+                                gui_data.extend(self.execute(body));
+                                break;
+                            }
+                            _ => continue,
+                        }
+                    }
+                }
+                Node::Return(expr) => {
+                    self.last_return = Some(self.eval_expr(expr));
                 }
                 Node::Window(props) => {
                     let mut window = json!({
@@ -91,7 +139,14 @@ impl Interpreter {
                                 let action_data = actions
                                     .into_iter()
                                     .map(|a| match a {
-                                        Node::Say(str) => json!({"type": "say", "value": str}),
+                                        Node::Say(expr) => {
+                                            let val = self.eval_expr(expr);
+                                            if let RuntimeValue::String(s) = val {
+                                                json!({"type": "say", "value": s})
+                                            } else {
+                                                json!({})
+                                            }
+                                        }
                                         _ => json!({}),
                                     })
                                     .collect::<Vec<_>>();
@@ -127,9 +182,13 @@ impl Interpreter {
                             for (param, arg) in params.iter().zip(args.iter()) {
                                 local_env.insert(param.clone(), self.eval_expr(arg.clone()));
                             }
-                            let mut local_interpreter = Interpreter { env: local_env, modules: self.modules.clone() };
+                            let mut local_interpreter = Interpreter {
+                                env: local_env,
+                                modules: self.modules.clone(),
+                                last_return: None,
+                            };
                             local_interpreter.execute(body.clone());
-                            RuntimeValue::String("".to_string())
+                            local_interpreter.last_return.unwrap_or(RuntimeValue::String("".to_string()))
                         }
                         _ => stdlib_call(&name, args, self),
                     }
@@ -137,6 +196,26 @@ impl Interpreter {
                     RuntimeValue::String(format!("Function {} not found", name))
                 }
             }
+            Expr::List(items) => {
+                let values = items.into_iter().map(|item| self.eval_expr(item)).collect();
+                RuntimeValue::List(values)
+            }
+        }
+    }
+}
+
+impl RuntimeValue {
+    pub fn to_string(&self) -> String {
+        match self {
+            RuntimeValue::String(s) => s.clone(),
+            RuntimeValue::Number(n) => n.to_string(),
+            RuntimeValue::Bool(b) => b.to_string(),
+            RuntimeValue::List(items) => format!("[{}]", items.iter().map(|i| i.to_string()).collect::<Vec<_>>().join(", ")),
+            RuntimeValue::Struct(name, fields) => {
+                let fields_str = fields.iter().map(|(k, v)| format!("{}: {}", k, v.to_string())).collect::<Vec<_>>().join(", ");
+                format!("{} {{ {} }}", name, fields_str)
+            }
+            RuntimeValue::Function(name, _, _) => format!("Function({})", name),
         }
     }
 }
