@@ -1,0 +1,2 @@
+fn send(server, user, pass, to, subject, body):
+    say "smtplib.send called"
