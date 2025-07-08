@@ -1,0 +1,2 @@
+fn encrypt(data):
+    say "ssl.encrypt called"
