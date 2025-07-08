@@ -12,12 +12,12 @@ async fn get_gui_data(file: String) -> serde_json::Value {
 
 #[tauri::command]
 async fn execute_action(action: String) {
-    println!("Action executed: {}", action);
+    println!("Action: {}", action);
 }
 
 #[tauri::command]
 async fn update_input(id: String, value: String) {
-    println!("Input {} updated with value: {}", id, value);
+    println!("Input {} updated: {}", id, value);
 }
 
 fn main() {
