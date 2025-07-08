@@ -1,17 +1,14 @@
-import "velvet-std"
+import "math"
+import "string"
 
-set counter = 0
+set num = 25
+say "Square root: " + math_sqrt(num)
 
-fn increment(n):
-    set counter = counter + n
-    say "Counter: " + counter
+def greet(name):
+    say "Hello, " + string_upper(name)
 
 do window:
-    title "Advanced App"
+    title "My App"
     size 800, 600
-    textinput "name" "Enter your name"
-    button "Increment" action:
-        increment(1)
-    button "Reset" action:
-        set counter = 0
-        say "Counter reset"
+    button "Greet" action:
+        greet("User")
