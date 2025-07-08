@@ -1,6 +1,6 @@
 [package]
 name = "velvet-core"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 
 [dependencies]
@@ -12,13 +12,28 @@ tokio = { version = "1.38", features = ["full"] }
 reqwest = { version = "0.11", features = ["blocking"] }
 rand = "0.8"
 sha2 = "0.10"
-serde_yaml = "0.9" # Added for yaml
-image = "0.24" # Added for image
-rusttype = "0.9" # Added for barcode/pdf
-rusqlite = "0.29" # Added for sqlite
-chrono = "0.4" # Added for dateutil
-geo = "0.26" # Added for geo
-qrcode = "0.12" # Added for qr
-rodio = "0.17" # Added for sound
-uuid = "1.8" # Added for uuid
-regex = "1.10" # Added for re
+serde_yaml = "0.9"
+image = "0.24"
+rusttype = "0.9"
+rusqlite = "0.29"
+chrono = "0.4"
+geo = "0.26"
+qrcode = "0.12"
+rodio = "0.17"
+uuid = "1.8"
+regex = "1.10"
+jni = "0.21" # Added for JNI integration
+rustls = "0.21" # Added for ssl
+imap = "2.4" # Added for imap
+ftp = "3.0" # Added for ftp
+lettre = "0.10" # Added for smtplib, email
+ping = "0.4" # Added for net
+sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio"] } # Added for db
+clap = "4.4" # Added for argparse
+tch = "0.10" # Added for ai (PyTorch Rust bindings)
+bitcoin = "0.29" # Added for crypto_wallet
+
+[lib]
+name = "velvet_core"
+path = "src/lib.rs"
+crate-type = ["cdylib"] # Required for JNI
