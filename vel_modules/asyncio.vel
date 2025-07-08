@@ -1,0 +1,2 @@
+fn run(task):
+    say "asyncio.run called"
