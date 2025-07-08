@@ -1,0 +1,2 @@
+fn parse(args):
+    say "argparse.parse called"
