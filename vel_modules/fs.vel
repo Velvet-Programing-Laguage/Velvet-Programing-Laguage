@@ -1,0 +1,5 @@
+def read(path):
+    say "fs.read called"
+
+def write(path, content):
+    say "fs.write called"
