@@ -1,2 +1,2 @@
 fn create(to, subject, body):
-    say "email.create called"
+    say "email.create called with to, subject, and body"
