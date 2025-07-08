@@ -1,16 +1,33 @@
 import "string"
-import "math"
-import "random"
+import "json"
+import "uuid"
+import "logging"
 
-set name = "velvet"
-say string_upper(name)
+# Define a constant
+const APP_NAME = "Velvet Demo"
 
-set rand = random_int(1, 10)
-say "Random: " + rand
+# Define a struct
+struct User:
+    id: String
+    name: String
 
+# Create a user
+let user = User {
+    id: uuid_generate(),
+    name: "Alice"
+}
+
+# Log user info
+logging_info("Created user: " + user.name)
+
+# JSON example
+let data = ["item1", "item2"]
+say json_stringify(data)
+
+# GUI with text input
 do window:
-    title "Velvet Demo"
+    title APP_NAME
     size 800, 600
-    textinput "input" "Type here"
-    button "Show" action:
-        say "You typed something!"
+    textinput "input" "Type your message"
+    button "Submit" action:
+        say "Submitted!"
