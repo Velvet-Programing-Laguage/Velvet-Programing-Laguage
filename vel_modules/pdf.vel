@@ -1,0 +1,2 @@
+fn create(content):
+    say "pdf.create called"
