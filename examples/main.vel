@@ -1,16 +1,20 @@
-set greeting = "Welcome to Velvet!"
+import "velvet-std"
 
-say greeting
+set message = "hello, velvet!"
+say str_upper(message)
 
-if greeting = "Welcome to Velvet!":
-    say "App is ready!"
-else:
-    say "Unexpected greeting"
+for i in range(1, 5):
+    say "Loop iteration: " + i
+
+fn greet(name):
+    say "Hello, " + name + "!"
 
 do window:
     title "Velvet Demo"
     size 800, 600
+    textinput "user" "Enter your name"
     button "Greet" action:
-        say "Hello, user!"
-    button "Exit" action:
-        say "Goodbye!"
+        greet("User")
+    button "Calculate" action:
+        set num = math_sqrt(25)
+        say "Square root of 25: " + num
