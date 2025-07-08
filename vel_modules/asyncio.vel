@@ -1,2 +1,2 @@
 fn run(task):
-    say "asyncio.run called"
+    say "asyncio.run called with task"
