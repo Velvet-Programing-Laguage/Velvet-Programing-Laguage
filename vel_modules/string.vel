@@ -1,0 +1,5 @@
+def upper(text):
+    say "string.upper called"
+
+def lower(text):
+    say "string.lower called"
