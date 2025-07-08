@@ -1,3 +1,5 @@
 import "string"
 
-say string_upper("hello, velvet!")
+# Simple string manipulation
+let msg = "hello, velvet!"
+say string_upper(msg)
