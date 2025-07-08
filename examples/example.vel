@@ -1,0 +1,7 @@
+say "Hello World!"
+
+do window:
+    title "Basic Velvet App"
+    size 800, 600
+    button "Click Me!" action:
+        say "You clicked!"
