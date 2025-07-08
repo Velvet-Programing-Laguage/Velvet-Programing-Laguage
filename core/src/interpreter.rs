@@ -2,7 +2,8 @@ use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::fs;
 use crate::parser::{Node, WindowProp, Expr, Type, Pattern};
-use crate::stdlib::{register_stdlib, stdlib_call};
+use crate::stdlib_1::{register_stdlib_1, stdlib_1_call};
+use crate::stdlib_2::{register_stdlib_2, stdlib_2_call};
 
 #[derive(Clone)]
 pub enum RuntimeValue {
@@ -27,7 +28,8 @@ impl Interpreter {
             modules: HashMap::new(),
             last_return: None,
         };
-        register_stdlib(&mut interpreter.env);
+        register_stdlib_1(&mut interpreter.env);
+        register_stdlib_2(&mut interpreter.env);
         interpreter
     }
 
@@ -199,10 +201,24 @@ impl Interpreter {
                             local_interpreter.execute(body.clone());
                             local_interpreter.last_return.unwrap_or(RuntimeValue::String("".to_string()))
                         }
-                        _ => stdlib_call(&name, args, self),
+                        _ => {
+                            if let Some(value) = stdlib_1_call(&name, args.clone(), self) {
+                                value
+                            } else if let Some(value) = stdlib_2_call(&name, args, self) {
+                                value
+                            } else {
+                                RuntimeValue::String(format!("Function {} not found", name))
+                            }
+                        }
                     }
                 } else {
-                    RuntimeValue::String(format!("Function {} not found", name))
+                    if let Some(value) = stdlib_1_call(&name, args.clone(), self) {
+                        value
+                    } else if let Some(value) = stdlib_2_call(&name, args, self) {
+                        value
+                    } else {
+                        RuntimeValue::String(format!("Function {} not found", name))
+                    }
                 }
             }
             Expr::List(items) => {
@@ -227,4 +243,4 @@ impl RuntimeValue {
             RuntimeValue::Function(name, _, _) => format!("Function({})", name),
         }
     }
-                        }
+}
