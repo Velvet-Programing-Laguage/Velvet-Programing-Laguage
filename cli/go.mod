@@ -5,8 +5,8 @@ go 1.21
 require (
     github.com/spf13/cobra v1.8.0
     github.com/go-resty/resty/v2 v2.13.1
-    github.com/cheggaaa/pb/v3 v3.1.5 // Added for progress bar
-    github.com/fatih/color v1.17.0 // Added for colored output
+    github.com/cheggaaa/pb/v3 v3.1.5
+    github.com/fatih/color v1.17.0
 )
 
 require (
