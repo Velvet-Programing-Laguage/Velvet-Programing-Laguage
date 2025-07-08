@@ -1,14 +1,21 @@
 import "math"
 import "string"
 
-set num = 25
-say "Square root: " + math_sqrt(num)
+struct Point:
+    x: Number
+    y: Number
 
-def greet(name):
-    say "Hello, " + string_upper(name)
+let p = Point { x: 10, y: 20 }
+
+fn add_point(p):
+    let sum = math_add(p.x, p.y)
+    return sum
+
+say add_point(p)
 
 do window:
-    title "My App"
+    title "Advanced App"
     size 800, 600
+    textinput "name" "Enter name"
     button "Greet" action:
-        greet("User")
+        say string_upper("user")
