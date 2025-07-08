@@ -12,18 +12,28 @@ function renderGUI(data) {
         if (item.type === 'window') {
             const window = document.createElement('div');
             window.className = 'bg-white p-4 rounded shadow flex flex-col items-center';
-            window.innerHTML = `
-                <h1 class="text-xl font-bold mb-2">${item.props.title}</h1>
-                ${item.props.buttons ? item.props.buttons.map(btn => `
+            let content = `<h1 class="text-xl font-bold mb-2">${item.props.title}</h1>`;
+            if (item.props.buttons) {
+                content += item.props.buttons.map(btn => `
                     <button onclick="handleAction('${btn.action[0].value}')">
                         ${btn.text}
                     </button>
-                `).join('') : ''}
-                ${item.props.inputs ? item.props.inputs.map(input => `
+                `).join('');
+            }
+            if (item.props.inputs) {
+                content += item.props.inputs.map(input => `
                     <input id="${input.id}" placeholder="${input.placeholder}"
                            oninput="updateInput('${input.id}', this.value)" />
-                `).join('') : ''}
-            `;
+                `).join('');
+            }
+            if (item.props.lists) {
+                content += item.props.lists.map(list => `
+                    <ul class="list-disc">
+                        ${list.items.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                `).join('');
+            }
+            window.innerHTML = content;
             app.appendChild(window);
         }
     });
