@@ -63,13 +63,11 @@ Velvet is ideal for rapid prototyping, small-scale applications, and developers 
 The Velvet project is organized into modular components, each implemented in a language best suited for its purpose.
 
 
-## Installtion
-
----
-
 ## Installation
 
    ```bash
    git clone https://github.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage.git
 
-   ```
+   ```bash
+   cd Velvet-Programing-Laguage
+
