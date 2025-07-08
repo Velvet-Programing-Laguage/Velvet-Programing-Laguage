@@ -1,0 +1,2 @@
+fn generate(content):
+    say "qr.generate called"
