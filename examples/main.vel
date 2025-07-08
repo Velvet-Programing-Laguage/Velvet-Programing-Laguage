@@ -1,0 +1,16 @@
+set greeting = "Welcome to Velvet!"
+
+say greeting
+
+if greeting = "Welcome to Velvet!":
+    say "App is ready!"
+else:
+    say "Unexpected greeting"
+
+do window:
+    title "Velvet Demo"
+    size 800, 600
+    button "Greet" action:
+        say "Hello, user!"
+    button "Exit" action:
+        say "Goodbye!"
