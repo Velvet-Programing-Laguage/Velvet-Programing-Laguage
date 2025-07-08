@@ -1,23 +1,41 @@
 use serde_json::{json, Value};
 use std::collections::HashMap;
+use std::fs;
 use crate::parser::{Node, WindowProp, Expr};
+use crate::stdlib::{register_stdlib, stdlib_call};
 
 #[derive(Clone)]
 pub enum RuntimeValue {
     String(String),
     Number(f64),
     Bool(bool),
+    Range(i32, i32), // Added for for loops
+    Function(String, Vec<String>, Vec<Node>), // Added for function definitions
 }
 
 pub struct Interpreter {
     env: HashMap<String, RuntimeValue>,
+    modules: HashMap<String, Vec<Node>>,
 }
 
 impl Interpreter {
     pub fn new() -> Self {
-        Interpreter {
+        let mut interpreter = Interpreter {
             env: HashMap::new(),
+            modules: HashMap::new(),
+        };
+        register_stdlib(&mut interpreter.env); // Register standard library
+        interpreter
+    }
+
+    pub fn load_module(&mut self, module: &str) -> Result<(), Box<dyn std::error::Error>> {
+        if !self.modules.contains_key(module) {
+            let path = format!("vel_modules/{}.vel", module);
+            let code = fs::read_to_string(&path)?;
+            let ast = crate::parser::parse_velvet(&code)?;
+            self.modules.insert(module.to_string(), ast);
         }
+        Ok(())
     }
 
     pub fn execute(&mut self, nodes: Vec<Node>) -> Value {
@@ -40,6 +58,27 @@ impl Interpreter {
                         gui_data.extend(self.execute(then_branch));
                     } else if let Some(else_nodes) = else_branch {
                         gui_data.extend(self.execute(else_nodes));
+                    }
+                }
+                Node::For(var, range, body) => {
+                    let range_val = self.eval_expr(*range);
+                    if let RuntimeValue::Range(start, end) = range_val {
+                        for i in start..end {
+                            self.env.insert(var.clone(), RuntimeValue::Number(i as f64));
+                            gui_data.extend(self.execute(body.clone()));
+                        }
+                    }
+                }
+                Node::Function(name, params, body) => {
+                    self.env.insert(name, RuntimeValue::Function(name, params, body));
+                }
+                Node::Import(module) => {
+                    if let Err(e) = self.load_module(&module) {
+                        println!("Error loading module {}: {}", module, e);
+                    } else {
+                        if let Some(module_nodes) = self.modules.get(&module) {
+                            gui_data.extend(self.execute(module_nodes.clone()));
+                        }
                     }
                 }
                 Node::Window(props) => {
@@ -75,6 +114,12 @@ impl Interpreter {
                                     "action": action_data
                                 }]);
                             }
+                            WindowProp::TextInput(id, placeholder) => {
+                                window["props"]["inputs"] = json!([{
+                                    "id": id,
+                                    "placeholder": placeholder
+                                }]);
+                            }
                         }
                     }
                     gui_data.push(window);
@@ -95,9 +140,14 @@ impl Interpreter {
                 match (left_val, op.as_str(), right_val) {
                     (RuntimeValue::Number(l), "+", RuntimeValue::Number(r)) => RuntimeValue::Number(l + r),
                     (RuntimeValue::Number(l), "-", RuntimeValue::Number(r)) => RuntimeValue::Number(l - r),
+                    (RuntimeValue::String(l), "+", RuntimeValue::String(r)) => RuntimeValue::String(l + &r),
                     _ => RuntimeValue::String("error".to_string()),
                 }
             }
-        }
-    }
-}
+            Expr::Call(name, args) => {
+                if let Some(func) = self.env.get(&name) {
+                    match func {
+                        RuntimeValue::Function(_, params, body) => {
+                            let mut local_env = self.env.clone();
+                            for (param, arg) in params.iter().zip(args.iter()) {
+                                local
