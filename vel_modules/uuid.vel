@@ -1,0 +1,2 @@
+fn generate():
+    say "uuid.generate called"
