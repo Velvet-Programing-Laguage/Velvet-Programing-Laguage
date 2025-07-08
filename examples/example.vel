@@ -1,7 +1,9 @@
-say "Hello World!"
+import "velvet-std"
+
+say str_upper("Hello, Velvet!")
 
 do window:
-    title "Basic Velvet App"
+    title "Simple App"
     size 800, 600
-    button "Click Me!" action:
-        say "You clicked!"
+    button "Greet" action:
+        say "Hello, user!"
