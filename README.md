@@ -65,9 +65,21 @@ The Velvet project is organized into modular components, each implemented in a l
 
 ## Installation
 
-   ```bash
-   git clone https://github.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage.git
 
-   ```bash
-   cd Velvet-Programing-Laguage
+Install Repo
 
+```bash
+git clone https://github.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage.git
+```
+
+Go to file
+
+```bash
+cd Velvet-Programing-Laguage
+```
+
+Run Install.sh
+
+```bash
+install.sh
+```
