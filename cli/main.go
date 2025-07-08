@@ -26,9 +26,16 @@ func main() {
         Run: func(cmd *cobra.Command, args []string) {
             config := VelConfig{
                 Name:    "velvet-project",
-                Version: "0.1.0",
+                Version: "0.4.0",
                 Dependencies: map[string]string{
-                    "velvet-std": "^1.0.0",
+                    "fs": "^1.0.0",
+                    "http": "^1.0.0",
+                    "time": "^1.0.0",
+                    "crypto": "^1.0.0",
+                    "math": "^1.0.0",
+                    "os": "^1.0.0",
+                    "random": "^1.0.0",
+                    "string": "^1.0.0"
                 },
             }
             configData, _ := json.MarshalIndent(config, "", "  ")
@@ -84,7 +91,6 @@ func main() {
             client := resty.New()
             for name, version := range config.Dependencies {
                 fmt.Printf("Installing %s@%s...\n", name, version)
-                // Mocked download (replace with real repo URL)
                 resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, version))
                 if err != nil {
                     fmt.Println("Error downloading:", err)
@@ -97,6 +103,44 @@ func main() {
         },
     }
 
-    rootCmd.AddCommand(initCmd, startCmd, debugCmd, installCmd)
+    var testCmd = &cobra.Command{
+        Use:   "test",
+        Short: "Run Velvet tests",
+        Run: func(cmd *cobra.Command, args []string) {
+            testFiles, _ := filepath.Glob("examples/test*.vel")
+            for _, file := range testFiles {
+                fmt.Printf("Running test: %s\n", file)
+                coreCmd := exec.Command("./target/release/velvet-core", file)
+                coreCmd.Dir = "core"
+                coreCmd.Stdout = os.Stdout
+                coreCmd.Stderr = os.Stderr
+                if err := coreCmd.Run(); err != nil {
+                    fmt.Printf("Test %s failed: %v\n", file, err)
+                } else {
+                    fmt.Printf("Test %s passed\n", file)
+                }
+            }
+        },
+    }
+
+    var runCmd = &cobra.Command{
+        Use:   "run [file]",
+        Short: "Run a specific Velvet file",
+        Args:  cobra.ExactArgs(1),
+        Run: func(cmd *cobra.Command, args []string) {
+            file := args[0]
+            if _, err := os.Stat(file); os.IsNotExist(err) {
+                fmt.Printf("File %s does not exist\n", file)
+                return
+            }
+            coreCmd := exec.Command("./target/release/velvet-core", file)
+            coreCmd.Dir = "core"
+            coreCmd.Stdout = os.Stdout
+            coreCmd.Stderr = os.Stderr
+            coreCmd.Run()
+        },
+    }
+
+    rootCmd.AddCommand(initCmd, startCmd, debugCmd, installCmd, testCmd, runCmd)
     rootCmd.Execute()
 }
