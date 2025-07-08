@@ -1,0 +1,2 @@
+fn balance(address):
+    say "crypto_wallet.balance called"
