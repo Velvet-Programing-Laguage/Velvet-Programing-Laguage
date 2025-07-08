@@ -1,17 +1,16 @@
 program = { statement* }
-statement = { say | window | set | if_stmt }
+statement = { say | set | if_stmt | for_stmt | function | import }
 say = { "say" ~ expr }
 set = { "set" ~ IDENT ~ "=" ~ expr }
 if_stmt = { "if" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~ ("else" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT)? }
-window = { "do" ~ "window" ~ ":" ~ NEWLINE ~ INDENT ~ window_prop+ ~ DEDENT }
-window_prop = { title | size | button }
-title = { "title" ~ STRING }
-size = { "size" ~ NUMBER ~ "," ~ NUMBER }
-button = { "button" ~ STRING ~ "action" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
-expr = { STRING | NUMBER | IDENT | arith_expr }
+for_stmt = { "for" ~ IDENT ~ "in" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+function = { "fn" ~ IDENT ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+import = { "import" ~ STRING }
+expr = { STRING | NUMBER | IDENT | arith_expr | call }
+call = { IDENT ~ "(" ~ (expr ~ ("," ~ expr)*)? ~ ")" }
 arith_expr = { expr ~ ("+" | "-") ~ expr }
 STRING = { "\"" ~ (!"\"")* ~ "\"" }
-NUMBER = { ASCII_DIGIT+ }
+NUMBER = { ASCII_DIGIT+ ("." ~ ASCII_DIGIT+)? }
 IDENT = { ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 NEWLINE = { "\n" }
 INDENT = { "    " }
