@@ -1,0 +1,11 @@
+fn boost_regex_match(text, pattern) {
+    return cpp_boost("regex_match", text, pattern)
+}
+
+fn boost_filesystem_exists(path) {
+    return cpp_boost("filesystem_exists", path)
+}
+
+fn boost_tokenize(text, delimiter) {
+    return cpp_boost("tokenize", text, delimiter)
+}
