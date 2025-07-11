@@ -1,0 +1,11 @@
+fn httparty_get(url) {
+    return ruby_httparty(url)
+}
+
+fn httparty_post(url, data) {
+    return ruby_httparty(url, "post", data)
+}
+
+fn httparty_options(url) {
+    return ruby_httparty(url, "options")
+}
