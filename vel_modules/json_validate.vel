@@ -1,0 +1,3 @@
+fn json_validate(json_str) {
+    return json_parse(json_str) != "error"
+}
