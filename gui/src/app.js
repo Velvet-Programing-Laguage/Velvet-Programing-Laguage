@@ -5,8 +5,19 @@ import _ from 'lodash';
 
 async function init() {
     // Load external JS libraries dynamically
-    await loadJSLibrary('axios', 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js');
-    await loadJSLibrary('lodash', 'https://cdn.jsdelivr.net/npm/lodash/lodash.min.js');
+    const libraries = [
+        { name: 'axios', url: 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js' },
+        { name: 'lodash', url: 'https://cdn.jsdelivr.net/npm/lodash/lodash.min.js' },
+    ];
+    for (const lib of libraries) {
+        if (!window[lib.name]) {
+            const script = document.createElement('script');
+            script.src = lib.url;
+            script.async = true;
+            document.head.appendChild(script);
+            await new Promise(resolve => script.onload = resolve);
+        }
+    }
 
     const guiData = await invoke('execute_velvet', { file: 'main.vel' });
     const container = document.getElementById('app');
@@ -32,17 +43,29 @@ async function init() {
                     });
                 });
             }
+
+            if (element.props.libraryActions) {
+                element.props.libraryActions.forEach(action => {
+                    const actionElement = document.getElementById(`action-${action.id}`);
+                    if (action.type === 'axios_get') {
+                        actionElement.addEventListener('click', async () => {
+                            try {
+                                const response = await axios.get(action.url);
+                                invoke('handle_library_response', { id: action.id, data: JSON.stringify(response.data) });
+                            } catch (error) {
+                                console.error('Axios error:', error);
+                            }
+                        });
+                    } else if (action.type === 'lodash_transform') {
+                        actionElement.addEventListener('click', () => {
+                            const result = _.map(action.data, item => _.toUpper(item));
+                            invoke('handle_library_response', { id: action.id, data: JSON.stringify(result) });
+                        });
+                    }
+                });
+            }
         }
     });
-}
-
-async function loadJSLibrary(name, url) {
-    if (window[name]) return;
-    const script = document.createElement('script');
-    script.src = url;
-    script.async = true;
-    document.head.appendChild(script);
-    return new Promise(resolve => script.onload = resolve);
 }
 
 window.addEventListener('DOMContentLoaded', init);
