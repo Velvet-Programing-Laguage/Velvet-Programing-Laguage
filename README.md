@@ -2,7 +2,7 @@
 
 Velvet is a modern, minimalist programming language designed to combine the simplicity of shell scripting with the clarity and structure of Rust. It features a domain-specific language (DSL) for creating graphical user interfaces (GUIs) using HTML/CSS, a robust command-line interface (CLI) inspired by npm, and a high-performance core written in Rust. Velvet aims to provide an intuitive development experience for creating both console-based and GUI applications with minimal boilerplate code.
 
-Velvet is open-source, cross-platform, and built with a focus on developer productivity. It supports dynamic typing, a clean syntax, and an integrated development workflow with commands like `vel init`, `vel install`, `vel start`, and `vel debug`.
+Velvet is open-source, cross-platform, and built with a focus on developer productivity. It supports dynamic typing, a clean syntax, and an integrated development workflow with commands like `vel init`, `vel install`, `vel start`, `vel build`, `vel build -> release (package name)`, and `vel debug`.
 
 ---
 
@@ -18,9 +18,9 @@ Velvet is open-source, cross-platform, and built with a focus on developer produ
 - [Example](#example)
 - [Technical Architecture](#technical-architecture)
   - [Core (Rust)](#core-rust)
-  - [CLI (Go)](#cli-go)
+  - [CLI (Rust)](#cli-rust)
   - [GUI (JavaScript/HTML/CSS, Tauri)](#gui-javascript-htmlcss-tauri)
-  - [Package Management](#package-management)
+  - [Package Management Java](#package-management)
 - [Development Roadmap](#development-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -211,8 +211,90 @@ irm https://raw.githubusercontent.com/Velvet-Programing-Laguage/Velvet-Programin
 
 ## Usage
 
+Writing your first Velvet program
+
+1. Create a new file with the .v extension, for example:
+
+
+
+# hello_world.vel
+
+say("Hello, Velvet World!")
+
+
+---
+
+Running your Velvet program (CLI)
+
+After installing Velvet using the install.sh script:
+
+vel run hello_world.vel
+
+This will compile and run your Velvet code, displaying:
+
+Hello, Velvet World!
+
+
+---
+
+Building a Velvet project
+
+To build (compile) your project without running it immediately:
+
+vel build hello_world.vel
+
+The compiled output will be stored in the default build directory.
+
+
+---
+
+Initializing a new Velvet project
+
+You can initialize a new Velvet project structure using:
+
+vel init my_project
+cd my_project
+
+This creates a folder with the recommended Velvet project layout.
+
+
+---
+
+
+ Command overview
+
+Command	Description
+
+vel init <project>	Initialize a new Velvet project
+vel build <file.vel>	Build a Velvet file/project
+vel run <file.vel>	Run a Velvet file directly
+vel gui	Launch the Velvet GUI
+vel --help	Show available CLI options
+
+
+
+---
+
+ Example workflow
+
+git clone https://github.com/Velvet-Programing-Laguage/Velvet-Programing-Language.git
+cd Velvet-Programing-Language
+sudo ./install.sh
+
+# Create and run your first program
+echo 'say("Hello from Velvet!")' > test.vel
+vel run test.vel
+
 ### Writing Velvet Code
 
 ### CLI Commands
 
 ## Example
+
+## Technical Architecture
+
+### Core Rust
+
+### CLI Rust
+
+### 
