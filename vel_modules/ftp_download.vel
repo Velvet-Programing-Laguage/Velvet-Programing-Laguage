@@ -1,0 +1,3 @@
+fn ftp_download(server, user, pass, file) {
+    return ftp_get(server, user, pass, file)
+}
