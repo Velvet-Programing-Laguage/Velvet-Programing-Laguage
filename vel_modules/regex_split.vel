@@ -1,0 +1,3 @@
+fn regex_split(text, pattern) {
+    return re_split(text, pattern)
+}
