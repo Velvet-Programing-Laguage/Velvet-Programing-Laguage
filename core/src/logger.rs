@@ -1,17 +1,26 @@
+use log::{debug, error, info};
+
 pub struct Logger {
     debug: bool,
 }
 
 impl Logger {
     pub fn new(debug: bool) -> Self {
+        env_logger::init();
         Logger { debug }
     }
 
-    pub fn log(&self, message: &str) {
+    pub fn info(&self, message: &str) {
+        info!("{}", message);
+    }
+
+    pub fn debug(&self, message: &str) {
         if self.debug {
-            println!("[DEBUG] {}", message);
-        } else {
-            println!("{}", message);
+            debug!("{}", message);
         }
+    }
+
+    pub fn error(&self, message: &str) {
+        error!("{}", message);
     }
 }
