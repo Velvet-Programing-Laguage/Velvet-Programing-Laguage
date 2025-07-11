@@ -69,13 +69,13 @@ func main() {
 
 func initProject() {
     config := loadConfig()
-    logger.Println("Initializing Velvet project...")
+    logger.Println("Initializing Velvet project with theme:", config.Gui.Theme)
     // Create vel.json and main.vel
 }
 
 func installDependencies() {
-    logger.Println("Installing dependencies...")
-    // Install python_requests, ruby_httparty, etc.
+    logger.Println("Installing dependencies: tensorflow, pytorch, rayon, crypto...")
+    // Install new dependencies
 }
 
 func runFile(file string) {
@@ -84,7 +84,7 @@ func runFile(file string) {
 }
 
 func startGui() {
-    logger.Println("Starting Tauri GUI...")
+    logger.Println("Starting Tauri GUI with Wayland support...")
     // Launch Tauri GUI
 }
 
@@ -115,7 +115,7 @@ func packageProject() {
 }
 
 func generateDocs() {
-    logger.Println("Generating documentation...")
+    logger.Println("Generating documentation for new modules...")
     // Generate Velvet docs
 }
 
