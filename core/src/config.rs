@@ -2,10 +2,17 @@ use serde_json;
 use std::fs::File;
 use std::io::Read;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize)]
 pub struct Config {
     pub debug: bool,
     pub dependencies: std::collections::HashMap<String, String>,
+    pub gui: GuiConfig,
+}
+
+#[derive(Default, serde::Deserialize)]
+pub struct GuiConfig {
+    pub theme: String,
+    pub wayland_enabled: bool,
 }
 
 impl Config {
