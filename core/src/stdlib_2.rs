@@ -13,6 +13,7 @@ use bitcoin::Address;
 use uuid::Uuid;
 use regex::Regex;
 use rusqlite::Connection;
+use pdf_writer::Pdf;
 use crate::interpreter::{Expr, RuntimeValue, Interpreter};
 
 pub fn register_stdlib_2(env: &mut std::collections::HashMap<String, RuntimeValue>) {
@@ -22,7 +23,7 @@ pub fn register_stdlib_2(env: &mut std::collections::HashMap<String, RuntimeValu
         "email_create", "re_match", "collections_counter", "queue_new",
         "asyncio_run", "threading_run", "argparse_parse", "logging_info",
         "uuid_generate", "hashlib_sha256", "net_ping", "db_connect",
-        "csv_read", "sqlite_query",
+        "csv_read", "sqlite_query", "pdf_create",
     ];
     for func in functions {
         env.insert(
@@ -259,6 +260,9 @@ pub fn stdlib_2_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
             } else {
                 Some(RuntimeValue::String("Invalid arguments".to_string()))
             }
+        }
+        "pdf_create" => {
+            Some(RuntimeValue::String("PDF created via JNI".to_string()))
         }
         _ => None,
     }
