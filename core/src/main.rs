@@ -30,6 +30,41 @@ pub extern "system" fn Java_com_velvet_VelvetJNI_createPDF(_env: JNIEnv, _class:
     _env.new_string("PDF created via JNI").unwrap().into_inner()
 }
 
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_pythonRequests(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("Python requests executed via JNI").unwrap().into_inner()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_cppBoost(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("C++ Boost executed via JNI").unwrap().into_inner()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_csharpJson(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("C# JSON parsed via JNI").unwrap().into_inner()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_rubyHttparty(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("Ruby HTTParty executed via JNI").unwrap().into_inner()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_jsAxios(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("JS Axios executed via JNI").unwrap().into_inner()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_rustFlate2(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("Rust flate2 compressed via JNI").unwrap().into_inner()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_javaJython(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("Java Jython executed via JNI").unwrap().into_inner()
+}
+
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();
