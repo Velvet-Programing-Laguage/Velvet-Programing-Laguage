@@ -1,25 +1,112 @@
 program = { statement* }
-statement = { say | let | const | if_stmt | for_stmt | fn | import | try_stmt | struct | match_stmt | return_stmt }
+
+statement = {
+      say
+    | let
+    | const
+    | if_stmt
+    | for_stmt
+    | while_stmt
+    | break_stmt
+    | continue_stmt
+    | fn
+    | import
+    | try_stmt
+    | struct
+    | match_stmt
+    | return_stmt
+    | expr_stmt
+}
+
 say = { "say" ~ expr }
-let = { "let" ~ IDENT ~ "=" ~ expr }
+
+let = { "let" ~ IDENT ~ ("=" ~ expr)? }
+
 const = { "const" ~ IDENT ~ "=" ~ expr }
-if_stmt = { "if" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~ ("else" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT)? }
-for_stmt = { "for" ~ IDENT ~ "in" ~ NUMBER ~ ".." ~ NUMBER ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
-fn = { "fn" ~ IDENT ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+
+if_stmt = {
+    "if" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~
+    ("else" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT)?
+}
+
+for_stmt = {
+    "for" ~ IDENT ~ "in" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+}
+
+while_stmt = {
+    "while" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+}
+
+break_stmt = { "break" }
+
+continue_stmt = { "continue" }
+
+fn = {
+    "fn" ~ IDENT ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+}
+
 import = { "import" ~ STRING }
-try_stmt = { "try" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~ "catch" ~ IDENT ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
-struct = { "struct" ~ IDENT ~ ":" ~ NEWLINE ~ INDENT ~ (IDENT ~ ":" ~ type)+ ~ DEDENT }
-match_stmt = { "match" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ (pattern ~ "=>" ~ statement+)+ ~ DEDENT }
+
+try_stmt = {
+    "try" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~
+    "catch" ~ IDENT ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+}
+
+struct = {
+    "struct" ~ IDENT ~ ":" ~ NEWLINE ~ INDENT ~ (IDENT ~ ":" ~ type)+ ~ DEDENT
+}
+
+match_stmt = {
+    "match" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ (pattern ~ "=>" ~ statement+)+ ~ DEDENT
+}
+
 return_stmt = { "return" ~ expr }
-expr = { STRING | NUMBER | IDENT | call | list }
-call = { IDENT ~ "(" ~ ((STRING | NUMBER | call | list) ~ ("," ~ (STRING | NUMBER | call | list))*)? ~ ")" }
-list = { "[" ~ ((STRING | NUMBER | call) ~ ("," ~ (STRING | NUMBER | call))*)? ~ "]" }
-type = { "String" | "Number" | "List" }
+
+expr_stmt = { expr }
+
+expr = {
+      STRING
+    | NUMBER
+    | IDENT
+    | call
+    | list
+    | "(" ~ expr ~ ")"
+}
+
+call = {
+    IDENT ~ "(" ~ (expr ~ ("," ~ expr)*)? ~ ")"
+}
+
+list = {
+    "[" ~ (expr ~ ("," ~ expr)*)? ~ "]"
+}
+
+pattern = {
+      IDENT
+    | NUMBER
+    | STRING
+    | "_"
+}
+
+type = {
+      "String"
+    | "Number"
+    | "List"
+    | IDENT
+}
+
 STRING = { "\"" ~ (!"\"")* ~ "\"" }
+
 NUMBER = { ASCII_DIGIT+ ("." ~ ASCII_DIGIT+)? }
+
 IDENT = { ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+
 NEWLINE = { "\n" }
+
 INDENT = { "    " }
+
 DEDENT = { "" }
+
 COMMENT = _{ "#" ~ (!NEWLINE)* ~ NEWLINE }
+
 WHITESPACE = _{ " " | "\t" | NEWLINE | COMMENT }
