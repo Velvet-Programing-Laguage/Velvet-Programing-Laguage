@@ -43,6 +43,9 @@ func main() {
                     "asyncio": "^1.0.0", "threading": "^1.0.0", "argparse": "^1.0.0",
                     "logging": "^1.0.0", "uuid": "^1.0.0", "hashlib": "^1.0.0", "net": "^1.0.0",
                     "db": "^1.0.0", "csv": "^1.0.0", "sqlite": "^1.0.0",
+                    "python_requests": "^1.0.0", "cpp_boost": "^1.0.0", "csharp_json": "^1.0.0",
+                    "ruby_httparty": "^1.0.0", "js_axios": "^1.0.0", "rust_flate2": "^1.0.0",
+                    "java_jython": "^1.0.0",
                 },
             }
             configData, _ := json.MarshalIndent(config, "", "  ")
@@ -144,26 +147,40 @@ func main() {
                     continue
                 }
 
-                // Fetch from repository
-                resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, versionConstraint))
-                if err != nil {
-                    color.Red("Error downloading %s@%s: %v", name, versionConstraint, err)
-                    bar.Increment()
-                    continue
-                }
-                if err := os.MkdirAll("vel_modules", 0755); err != nil {
-                    color.Red("Error creating vel_modules directory: %v", err)
-                    bar.Increment()
-                    continue
-                }
-                if err := ioutil.WriteFile(modulePath, resp.Body(), 0644); err != nil {
-                    color.Red("Error writing %s: %v", modulePath, err)
-                    bar.Increment()
-                    continue
-                }
-                // Cache the module
-                if err := ioutil.WriteFile(cachePath, resp.Body(), 0644); err != nil {
-                    color.Yellow("Warning: Failed to cache %s@%s: %v", name, versionConstraint, err)
+                // Handle external language dependencies
+                switch name {
+                case "python_requests":
+                    exec.Command("pip3", "install", "requests").Run()
+                    color.Green("Installed Python requests")
+                case "ruby_httparty":
+                    exec.Command("gem", "install", "httparty").Run()
+                    color.Green("Installed Ruby HTTParty")
+                case "cpp_boost":
+                    // Assume Boost is installed via system package manager
+                    color.Green("Assuming C++ Boost is installed")
+                case "csharp_json":
+                    // Assume Newtonsoft.Json is installed via NuGet
+                    color.Green("Assuming C# Newtonsoft.Json is installed")
+                default:
+                    resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, versionConstraint))
+                    if err != nil {
+                        color.Red("Error downloading %s@%s: %v", name, versionConstraint, err)
+                        bar.Increment()
+                        continue
+                    }
+                    if err := os.MkdirAll("vel_modules", 0755); err != nil {
+                        color.Red("Error creating vel_modules directory: %v", err)
+                        bar.Increment()
+                        continue
+                    }
+                    if err := ioutil.WriteFile(modulePath, resp.Body(), 0644); err != nil {
+                        color.Red("Error writing %s: %v", modulePath, err)
+                        bar.Increment()
+                        continue
+                    }
+                    if err := ioutil.WriteFile(cachePath, resp.Body(), 0644); err != nil {
+                        color.Yellow("Warning: Failed to cache %s@%s: %v", name, versionConstraint, err)
+                    }
                 }
                 color.Green("Successfully installed %s@%s", name, versionConstraint)
                 bar.Increment()
@@ -203,8 +220,7 @@ func main() {
                     bar.Increment()
                     continue
                 }
-                // Mock fetching latest version
-                latestVersion := "1.1.0" // Replace with actual repository query
+                latestVersion := "1.1.0" // Mock latest version
                 latest, err := semver.NewVersion(latestVersion)
                 if err != nil {
                     color.Red("Invalid latest version for %s: %v", name, err)
@@ -216,21 +232,29 @@ func main() {
                 } else {
                     color.Cyan("Updating %s from %s to %s", name, versionConstraint, latestVersion)
                     config.Dependencies[name] = "^" + latestVersion
-                    resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, latestVersion))
-                    if err != nil {
-                        color.Red("Error downloading %s@%s: %v", name, latestVersion, err)
-                        bar.Increment()
-                        continue
-                    }
-                    modulePath := filepath.Join("vel_modules", name+".vel")
-                    cachePath := filepath.Join("vel_modules_cache", fmt.Sprintf("%s-%s.vel", name, latestVersion))
-                    if err := ioutil.WriteFile(modulePath, resp.Body(), 0644); err != nil {
-                        color.Red("Error writing %s: %v", modulePath, err)
-                        bar.Increment()
-                        continue
-                    }
-                    if err := ioutil.WriteFile(cachePath, resp.Body(), 0644); err != nil {
-                        color.Yellow("Warning: Failed to cache %s@%s: %v", name, latestVersion, err)
+                    if name == "python_requests" {
+                        exec.Command("pip3", "install", "--upgrade", "requests").Run()
+                    } else if name == "ruby_httparty" {
+                        exec.Command("gem", "update", "httparty").Run()
+                    } else if name == "cpp_boost" || name == "csharp_json" {
+                        color.Yellow("Manual update required for %s", name)
+                    } else {
+                        resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, latestVersion))
+                        if err != nil {
+                            color.Red("Error downloading %s@%s: %v", name, latestVersion, err)
+                            bar.Increment()
+                            continue
+                        }
+                        modulePath := filepath.Join("vel_modules", name+".vel")
+                        cachePath := filepath.Join("vel_modules_cache", fmt.Sprintf("%s-%s.vel", name, latestVersion))
+                        if err := ioutil.WriteFile(modulePath, resp.Body(), 0644); err != nil {
+                            color.Red("Error writing %s: %v", modulePath, err)
+                            bar.Increment()
+                            continue
+                        }
+                        if err := ioutil.WriteFile(cachePath, resp.Body(), 0644); err != nil {
+                            color.Yellow("Warning: Failed to cache %s@%s: %v", name, latestVersion, err)
+                        }
                     }
                 }
                 bar.Increment()
@@ -238,7 +262,6 @@ func main() {
             }
             bar.Finish()
 
-            // Update vel.json with new versions
             configData, _ = json.MarshalIndent(config, "", "  ")
             if err := ioutil.WriteFile("vel.json", configData, 0644); err != nil {
                 color.Red("Error updating vel.json: %v", err)
