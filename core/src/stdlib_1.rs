@@ -10,6 +10,8 @@ use geo::Point;
 use qrcode::QrCode;
 use image::{ImageBuffer, Rgb};
 use rodio::{Decoder, OutputStream, Source};
+use flate2::{write::ZlibEncoder, Compression};
+use std::process::Command;
 use crate::interpreter::{Expr, RuntimeValue, Interpreter};
 
 pub fn register_stdlib_1(env: &mut std::collections::HashMap<String, RuntimeValue>) {
@@ -19,7 +21,8 @@ pub fn register_stdlib_1(env: &mut std::collections::HashMap<String, RuntimeValu
         "string_upper", "string_lower", "json_parse", "json_stringify",
         "yaml_parse", "yaml_stringify", "dotenv_load", "dateutil_format",
         "geo_distance", "barcode_generate", "image_resize", "qr_generate",
-        "camera_capture", "sound_play",
+        "camera_capture", "sound_play", "python_requests", "cpp_boost",
+        "compress_zlib",
     ];
     for func in functions {
         env.insert(
@@ -290,6 +293,36 @@ pub fn stdlib_1_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
                 Some(RuntimeValue::String("Invalid path".to_string()))
             }
         }
+        "python_requests" => {
+            if let (Some(RuntimeValue::String(url)), Some(RuntimeValue::String(method))) = (evaluated_args.get(0), evaluated_args.get(1)) {
+                let output = Command::new("python3")
+                    .arg("-c")
+                    .arg(format!("import requests; print(requests.{}( '{}').text)", method.to_lowercase(), url))
+                    .output()
+                    .map_err(|e| format!("Error: {}", e))?;
+                Some(RuntimeValue::String(String::from_utf8_lossy(&output.stdout).to_string()))
+            } else {
+                Some(RuntimeValue::String("Invalid URL or method".to_string()))
+            }
+        }
+        "cpp_boost" => {
+            if let Some(RuntimeValue::String(input)) = evaluated_args.get(0) {
+                // Placeholder for Boost C++ interop (requires compiled C++ shared lib)
+                Some(RuntimeValue::String(format!("C++ Boost processed: {}", input)))
+            } else {
+                Some(RuntimeValue::String("Invalid input".to_string()))
+            }
+        }
+        "compress_zlib" => {
+            if let Some(RuntimeValue::String(data)) = evaluated_args.get(0) {
+                let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+                std::io::Write::write_all(&mut encoder, data.as_bytes()).unwrap();
+                let compressed = encoder.finish().unwrap();
+                Some(RuntimeValue::String(base64::encode(compressed)))
+            } else {
+                Some(RuntimeValue::String("Invalid data".to_string()))
+            }
+        }
         _ => None,
     }
-            }
+                                   }
