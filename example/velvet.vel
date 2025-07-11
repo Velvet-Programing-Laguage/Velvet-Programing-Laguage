@@ -1,3 +1,16 @@
 say "Hello, Velvet!"
 let x: Number = 42
-say x
+const y = "World"
+say x + " " + y
+fun greet(name: String) -> {
+    say "Hello, " + name
+}
+greet("Alice")
+for item in ["a", "b", "c"] {
+    say item
+}
+if x == 42 {
+    say "x is 42"
+} else {
+    say "x is not 42"
+}
