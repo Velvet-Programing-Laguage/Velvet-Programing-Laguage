@@ -1,9 +1,12 @@
 mod config;
+mod error;
 mod ffi;
 mod interpreter;
 mod logger;
 mod modules;
 mod parser;
+mod plugin_system;
+mod repl;
 mod types;
 
 use std::ffi::{CStr, CString};
@@ -16,7 +19,7 @@ pub extern "C" fn velvet_init(args: *const c_char) -> *mut c_char {
     let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
     let config = Config::load("vel.json").unwrap_or_default();
     let logger = Logger::new(config.debug);
-    logger.log(&format!("Initializing Velvet with args: {}", args_str));
+    logger.info(&format!("Initializing Velvet with args: {}", args_str));
     let result = modules::init(args_str);
     CString::new(result).unwrap().into_raw()
 }
@@ -109,5 +112,26 @@ pub extern "C" fn velvet_perf_parallel(args: *const c_char) -> *mut c_char {
 pub extern "C" fn velvet_perf_crypto(args: *const c_char) -> *mut c_char {
     let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
     let result = modules::perf::crypto(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_db_sqlite(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::db::sqlite(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_net_websocket(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::net::websocket(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_gpu_cuda(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::gpu::cuda(args_str);
     CString::new(result).unwrap().into_raw()
 }
