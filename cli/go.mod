@@ -8,8 +8,10 @@ require (
     github.com/cheggaaa/pb/v3 v3.1.5
     github.com/fatih/color v1.17.0
     github.com/Masterminds/semver v1.5.0
-    github.com/go-python/gopy v0.3.0 // Added for Python interop
-    github.com/goplus/llgo v0.9.0 // Added for C++ interop
+    github.com/go-python/gopy v0.3.0 // For Python interop
+    github.com/goplus/llgo v0.9.0 // For C++ interop
+    github.com/mono/mono-go v0.0.1 // For C# interop
+    github.com/ruby/go-ruby v0.1.0 // For Ruby interop
 )
 
 require (
