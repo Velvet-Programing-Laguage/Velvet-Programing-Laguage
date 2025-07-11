@@ -15,23 +15,17 @@ public class VelvetJNI {
 
     public native String createPDF(String args);
 
-    public native String base64Encode(String args);
+    public native String pythonRequests(String args);
 
-    public native String compressData(String args);
+    public native String cppBoost(String args);
 
-    public native String hashMD5(String args);
+    public native String csharpJson(String args);
 
-    public native String httpPost(String args);
+    public native String rubyHttparty(String args);
 
-    public native String imageCrop(String args);
+    public native String jsAxios(String args);
 
-    public native String jsonValidate(String args);
+    public native String rustFlate2(String args);
 
-    public native String xmlParse(String args);
-
-    public native String yamlValidate(String args);
-
-    public native String dbMongoConnect(String args);
-
-    public native String dbRedisConnect(String args);
+    public native String javaJython(String args);
 }
