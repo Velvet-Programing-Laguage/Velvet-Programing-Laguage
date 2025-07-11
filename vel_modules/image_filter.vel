@@ -1,0 +1,3 @@
+fn image_filter(path, filter_type) {
+    return image_process(path, filter_type)
+}
