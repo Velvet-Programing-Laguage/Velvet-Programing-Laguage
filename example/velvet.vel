@@ -1,0 +1,3 @@
+say "Hello, Velvet!"
+let x: Number = 42
+say x
