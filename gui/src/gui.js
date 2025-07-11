@@ -42,6 +42,29 @@ export function renderComponent(type, id, x, y, options = {}) {
                 document.dispatchEvent(new CustomEvent('velvet:input', { detail: { id, value: element.value } }));
             });
             break;
+        case 'grid':
+            element = document.createElement('div');
+            element.className = 'velvet-grid';
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            element.style.gridTemplateRows = `repeat(${options.rows}, 1fr)`;
+            element.style.gridTemplateColumns = `repeat(${options.cols}, 1fr)`;
+            break;
+        case 'dialog':
+            element = document.createElement('div');
+            element.className = 'velvet-dialog';
+            element.innerHTML = `
+                <div class="velvet-dialog-content">
+                    <span class="velvet-dialog-close">×</span>
+                    <p>${options.content || 'Dialog Content'}</p>
+                </div>
+            `;
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            element.querySelector('.velvet-dialog-close').addEventListener('click', () => {
+                element.style.display = 'none';
+            });
+            break;
         case 'tab':
             element = document.createElement('div');
             element.className = 'velvet-tab';
@@ -63,21 +86,6 @@ export function renderComponent(type, id, x, y, options = {}) {
             });
             element.style.left = `${x}px`;
             element.style.top = `${y}px`;
-            break;
-        case 'modal':
-            element = document.createElement('div');
-            element.className = 'velvet-modal';
-            element.innerHTML = `
-                <div class="velvet-modal-content">
-                    <span class="velvet-modal-close">&times;</span>
-                    <p>${options.content || 'Modal Content'}</p>
-                </div>
-            `;
-            element.style.left = `${x}px`;
-            element.style.top = `${y}px`;
-            element.querySelector('.velvet-modal-close').addEventListener('click', () => {
-                element.style.display = 'none';
-            });
             break;
     }
     element.id = id;
