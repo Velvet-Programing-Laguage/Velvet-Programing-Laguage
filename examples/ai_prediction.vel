@@ -1,0 +1,31 @@
+# Example: Using TensorFlow and PyTorch for AI predictions
+import ai_tensorflow
+import ai_pytorch
+import csharp_json
+
+# Load a TensorFlow model
+let tf_model = ai_tensorflow.tf_load_model("models/classifier.h5")
+say "TensorFlow model loaded: ", tf_model
+
+# Prepare sample data
+let input_data = csharp_json.json_stringify({
+    "features": [1.5, 2.3, 0.8, 4.1]
+})
+
+# Run TensorFlow prediction
+let tf_prediction = ai_tensorflow.tf_predict(tf_model, input_data)
+say "TensorFlow prediction: ", tf_prediction
+
+# Load a PyTorch model
+let pt_model = ai_pytorch.pt_load_model("models/neural_net.pt")
+say "PyTorch model loaded: ", pt_model
+
+# Run PyTorch prediction
+let pt_prediction = ai_pytorch.pt_predict(pt_model, input_data)
+say "PyTorch prediction: ", pt_prediction
+
+# Train PyTorch model (simulated)
+let dataset = "datasets/train.json"
+let epochs = 10
+let training_result = ai_pytorch.pt_finetune(pt_model, dataset, epochs)
+say "PyTorch training result: ", training_result
