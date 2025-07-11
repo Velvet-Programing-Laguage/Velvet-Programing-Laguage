@@ -1,0 +1,3 @@
+fn math_random(min, max) {
+    return random_int(min, max)
+}
