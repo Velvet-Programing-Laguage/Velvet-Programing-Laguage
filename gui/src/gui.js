@@ -1,7 +1,7 @@
 const { invoke } = window.__TAURI__.tauri;
 
 export function renderComponent(type, id, x, y, options = {}) {
-    const container = document.getElementById('app');
+    const container = document.getElementById('components');
     let element;
     switch (type) {
         case 'button':
@@ -12,7 +12,7 @@ export function renderComponent(type, id, x, y, options = {}) {
             element.className = 'velvet-button';
             element.addEventListener('click', async () => {
                 const result = await invoke('velvet_' + options.action, { args: options.command });
-                console.log(`Button ${id} action:`, result);
+                document.dispatchEvent(new CustomEvent('velvet:action', { detail: { id, result } }));
             });
             break;
         case 'dropdown':
@@ -26,8 +26,8 @@ export function renderComponent(type, id, x, y, options = {}) {
             element.style.left = `${x}px`;
             element.style.top = `${y}px`;
             element.className = 'velvet-dropdown';
-            element.addEventListener('change', async () => {
-                console.log(`Dropdown ${id} selected:`, element.value);
+            element.addEventListener('change', () => {
+                document.dispatchEvent(new CustomEvent('velvet:change', { detail: { id, value: element.value } }));
             });
             break;
         case 'slider':
@@ -38,8 +38,45 @@ export function renderComponent(type, id, x, y, options = {}) {
             element.style.left = `${x}px`;
             element.style.top = `${y}px`;
             element.className = 'velvet-slider';
-            element.addEventListener('input', async () => {
-                console.log(`Slider ${id} value:`, element.value);
+            element.addEventListener('input', () => {
+                document.dispatchEvent(new CustomEvent('velvet:input', { detail: { id, value: element.value } }));
+            });
+            break;
+        case 'tab':
+            element = document.createElement('div');
+            element.className = 'velvet-tab';
+            options.tabs.forEach((tab, index) => {
+                const tabButton = document.createElement('button');
+                tabButton.textContent = tab.name;
+                tabButton.className = 'velvet-tab-button';
+                tabButton.addEventListener('click', () => {
+                    document.querySelectorAll('.velvet-tab-content').forEach(c => c.style.display = 'none');
+                    document.getElementById(`tab-content-${id}-${index}`).style.display = 'block';
+                });
+                element.appendChild(tabButton);
+                const content = document.createElement('div');
+                content.id = `tab-content-${id}-${index}`;
+                content.className = 'velvet-tab-content';
+                content.textContent = tab.content;
+                content.style.display = index === 0 ? 'block' : 'none';
+                element.appendChild(content);
+            });
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            break;
+        case 'modal':
+            element = document.createElement('div');
+            element.className = 'velvet-modal';
+            element.innerHTML = `
+                <div class="velvet-modal-content">
+                    <span class="velvet-modal-close">&times;</span>
+                    <p>${options.content || 'Modal Content'}</p>
+                </div>
+            `;
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+            element.querySelector('.velvet-modal-close').addEventListener('click', () => {
+                element.style.display = 'none';
             });
             break;
     }
