@@ -1,5 +1,0 @@
-import "string"
-
-# Simple string manipulation
-let msg = "hello, velvet!"
-say string_upper(msg)
