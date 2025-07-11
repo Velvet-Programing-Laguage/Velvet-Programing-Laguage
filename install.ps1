@@ -1,143 +1,98 @@
-# Velvet Install Script for Windows
-# Author: VELVET TEAM
-# Date: 2025-07-11
+# install.ps1
+# Script to install Velvet programming language and its dependencies on Windows
 
-#Requires -Version 5.1
+# Function to check if running as administrator
+function Test-Admin {
+    $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
-$ErrorActionPreference = "Stop"
+# Elevate to administrator if not already
+if (-not (Test-Admin)) {
+    Write-Host "This script requires administrative privileges. Elevating..."
+    Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
+}
 
-$LogFile = "C:\Temp\velvet_install.log"
-$VelvetRepo = "https://github.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage.git"
-$VelvetDir = "Velvet-Programing-Laguage"
+# Function to install dependencies
+function Install-Dependencies {
+    Write-Host "Installing dependencies..."
 
-function Write-Log {
-    param([string]$Message, [string]$Level = "INFO")
-    $TimeStamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $Color = switch ($Level) {
-        "INFO" { "Green" }
-        "WARN" { "Yellow" }
-        "ERROR" { "Red" }
-        default { "White" }
+    # Install Chocolatey (package manager) if not present
+    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
     }
-    Write-Host "[$Level] $Message" -ForegroundColor $Color
-    Add-Content -Path $LogFile -Value "[$Level] $TimeStamp $Message"
-    if ($Level -eq "ERROR") { exit 1 }
+
+    # Install required languages and tools
+    choco install -y git python ruby rust go openjdk11 nodejs elixir kotlin
+    # Crystal (not available via Chocolatey, install manually)
+    Write-Host "Installing Crystal..."
+    $crystalUrl = "https://github.com/crystal-lang/crystal/releases/download/1.13.1/crystal-1.13.1-1-windows-x86_64-msvc.zip"
+    $crystalZip = "$env:TEMP\crystal.zip"
+    Invoke-WebRequest -Uri $crystalUrl -OutFile $crystalZip
+    Expand-Archive -Path $crystalZip -DestinationPath "$env:ProgramFiles\Crystal"
+    $env:Path += ";$env:ProgramFiles\Crystal\bin"
+    [Environment]::SetEnvironmentVariable("Path", $env:Path, [System.EnvironmentVariableTarget]::Machine)
 }
 
-function Show-Banner {
-@"
-  ___      ___ _______   ___       ___      ___ _______  _________   
- |\  \    /  /|\  ___ \ |\  \     |\  \    /  /|\  ___ \|\___   ___\ 
- \ \  \  /  / | \   __/|\ \  \    \ \  \  /  / | \   __/\|___ \  \_| 
-  \ \  \/  / / \ \  \_|/_\ \  \    \ \  \/  / / \ \  \_|/__  \ \  \  
-   \ \    / /   \ \  \_|\ \ \  \____\ \    / /   \ \  \_|\ \  \ \  \ 
-    \ \__/ /     \ \_______\ \_______\ \__/ /     \ \_______\  \ \__\
-     \|__|/       \|_______|\|_______|\|__|/       \|_______|   \|__|
-
-"@
-}
-
-function Spinner {
-    param([scriptblock]$Script)
-    $Job = Start-Job $Script
-    $Chars = @('|', '/', '-', '\')
-    while ($Job.State -eq 'Running') {
-        foreach ($Char in $Chars) {
-            Write-Host -NoNewline "$Char `r"
-            Start-Sleep -Milliseconds 100
-        }
-    }
-    Receive-Job $Job
-    Remove-Job $Job
-}
-
-function Check-Command {
-    param([string]$Command)
-    $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
-}
-
-function Install-Rust {
-    if (-not (Check-Command "rustc")) {
-        Write-Log "Installing Rust..."
-        Invoke-WebRequest -Uri https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe -OutFile rustup-init.exe
-        Start-Process -FilePath .\rustup-init.exe -ArgumentList "-y" -Wait
-        Remove-Item .\rustup-init.exe
-        $Env:Path += ";$Env:USERPROFILE\.cargo\bin"
-        Write-Log "Rust installed."
+# Function to compile and install Velvet
+function Install-Velvet {
+    # Clone or assume the Velvet project is in the current directory
+    if (-not (Test-Path "velvet")) {
+        git clone https://github.com/andyh/velvet.git
+        Set-Location velvet
     } else {
-        Write-Log "Rust found: $(rustc --version)"
+        Set-Location velvet
     }
-}
 
-function Install-Node {
-    if (-not (Check-Command "node")) {
-        Write-Log "Please install Node.js (v18+) manually from https://nodejs.org and re-run the script." "ERROR"
-    } else {
-        Write-Log "Node.js found: $(node --version)"
-    }
-}
-
-function Install-Java {
-    if (-not (Check-Command "java")) {
-        Write-Log "Please install OpenJDK 17 manually from https://adoptium.net and re-run the script." "ERROR"
-    } else {
-        Write-Log "Java found: $(java -version 2>&1 | Select-Object -First 1)"
-    }
-}
-
-function Install-Tauri {
-    if (-not (Check-Command "tauri")) {
-        Write-Log "Installing Tauri CLI globally..."
-        npm install -g @tauri-apps/cli | Out-Null
-        Write-Log "Tauri CLI installed."
-    } else {
-        Write-Log "Tauri CLI found: $(tauri --version)"
-    }
-}
-
-function Build-Velvet {
-    Set-Location $VelvetDir
-
-    Write-Log "Building Velvet core (Rust)..."
-    Set-Location core
+    # Compile Rust core
+    Write-Host "Compiling Velvet core (Rust)..."
     cargo build --release
-    Set-Location ..
+    Copy-Item -Path "target\release\velvet.exe" -Destination "$env:ProgramFiles\Velvet\velvet_core.exe"
 
-    Write-Log "Building Velvet GUI (Tauri)..."
-    Set-Location gui
-    npm install
-    npm run build
-    Set-Location ..
-    
-    Set-Location ..
+    # Compile Go CLI
+    Write-Host "Compiling Velvet CLI (Go)..."
+    go build -o vel.exe src/cli/main.go
+    Copy-Item -Path "vel.exe" -Destination "$env:ProgramFiles\Velvet\vel.exe"
 
-    Write-Log "Velvet build complete."
+    # Install Python dependencies
+    Write-Host "Installing Python dependencies..."
+    pip install -r requirements.txt
+
+    # Create .velvet-library directory
+    New-Item -Path "$env:ProgramFiles\.velvet-library" -ItemType Directory -Force
+    Write-Host "Created $env:ProgramFiles\.velvet-library"
+
+    # Copy Python hooks and configuration
+    New-Item -Path "$env:ProgramFiles\Velvet\hooks" -ItemType Directory -Force
+    Copy-Item -Path "src\hooks\*" -Destination "$env:ProgramFiles\Velvet\hooks" -Recurse
+    Copy-Item -Path "src\config\vel.config" -Destination "$env:ProgramFiles\Velvet\"
 }
 
-function Main {
-    if (-not (Test-Path "C:\Temp")) { New-Item -Path "C:\Temp" -ItemType Directory }
-    Remove-Item $LogFile -ErrorAction SilentlyContinue
-
-    Show-Banner
-    Write-Log "Starting installation of Velvet Programming Language"
-
-    if (Test-Path $VelvetDir) {
-        Write-Log "Removing existing directory $VelvetDir..." "WARN"
-        Remove-Item $VelvetDir -Recurse -Force
+# Function to update system PATH
+function Update-Path {
+    $velvetPath = "$env:ProgramFiles\Velvet"
+    $currentPath = [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
+    if ($currentPath -notlike "*$velvetPath*") {
+        [Environment]::SetEnvironmentVariable("Path", "$currentPath;$velvetPath", [System.EnvironmentVariableTarget]::Machine)
+        Write-Host "Added $velvetPath to system PATH"
     }
-
-    Write-Log "Cloning Velvet repository..."
-    Spinner { git clone $VelvetRepo }
-
-    Install-Java
-    Install-Rust
-    Install-Node
-    Install-Tauri
-
-    Build-Velvet
-
-    Write-Log "Velvet Programming Language installed successfully!" "INFO"
-    Write-Host "Installation complete!" -ForegroundColor Green
 }
 
-Main
+# Main execution
+Write-Host "Starting Velvet installation..."
+
+# Install dependencies
+Install-Dependencies
+
+# Install Velvet
+Install-Velvet
+
+# Update PATH
+Update-Path
+
+Write-Host "Velvet installed successfully!"
+Write-Host "You can now use 'vel' command to manage Velvet projects."
+Write-Host "Try 'vel --help' for available commands."
