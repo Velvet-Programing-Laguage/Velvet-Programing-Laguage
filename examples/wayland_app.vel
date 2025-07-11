@@ -1,0 +1,22 @@
+# Example: Wayland GUI for Linux
+import wayland_gui
+import os
+
+# Check if running on Linux
+if os.platform == "linux" {
+    # Initialize Wayland compositor
+    wayland_gui.wayland_init(":0")
+    say "Wayland initialized"
+
+    # Add a native Wayland dialog
+    wayland_gui.wayland_add_dialog("welcome_dialog", "Velvet Wayland", "Welcome to Velvet on Wayland!")
+
+    # Set window properties
+    wayland_gui.wayland_set_window("main_window", 0.9, false)
+    say "Window properties set"
+
+    # Add a button with Wayland-native styling
+    wayland_gui.wayland_add_button("action_btn", 50, 50, "Run Action", "js_axios,axios_get,https://api.example.com")
+} else {
+    say "Wayland GUI is Linux-only"
+}
