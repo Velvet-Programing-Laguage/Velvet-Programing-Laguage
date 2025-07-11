@@ -69,3 +69,45 @@ pub extern "C" fn velvet_java_jython(args: *const c_char) -> *mut c_char {
     let result = modules::java::jython(args_str);
     CString::new(result).unwrap().into_raw()
 }
+
+#[no_mangle]
+pub extern "C" fn velvet_tauri_gui(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::tauri::gui(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_wayland_gui(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::wayland::gui(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_ai_tensorflow(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::ai::tensorflow(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_ai_pytorch(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::ai::pytorch(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_perf_parallel(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::perf::parallel(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_perf_crypto(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = modules::perf::crypto(args_str);
+    CString::new(result).unwrap().into_raw()
+}
