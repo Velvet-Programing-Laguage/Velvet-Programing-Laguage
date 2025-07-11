@@ -10,4 +10,8 @@ public class VelvetJNI {
     public native String runPygame(String args);
 
     public native String runTk(String args);
+
+    public native String captureCamera(String args);
+
+    public native String createPDF(String args);
 }
