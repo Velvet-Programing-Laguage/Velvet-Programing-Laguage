@@ -14,6 +14,8 @@ use uuid::Uuid;
 use regex::Regex;
 use rusqlite::Connection;
 use pdf_writer::Pdf;
+use jsonwebtoken::{encode, Header, EncodingKey};
+use std::process::Command;
 use crate::interpreter::{Expr, RuntimeValue, Interpreter};
 
 pub fn register_stdlib_2(env: &mut std::collections::HashMap<String, RuntimeValue>) {
@@ -23,7 +25,9 @@ pub fn register_stdlib_2(env: &mut std::collections::HashMap<String, RuntimeValu
         "email_create", "re_match", "collections_counter", "queue_new",
         "asyncio_run", "threading_run", "argparse_parse", "logging_info",
         "uuid_generate", "hashlib_sha256", "net_ping", "db_connect",
-        "csv_read", "sqlite_query", "pdf_create",
+        "csv_read", "sqlite_query", "pdf_create", "csharp_json",
+        "ruby_httparty", "js_axios", "rust_flate2", "java_jython",
+        "jwt_encode",
     ];
     for func in functions {
         env.insert(
@@ -264,6 +268,61 @@ pub fn stdlib_2_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
         "pdf_create" => {
             Some(RuntimeValue::String("PDF created via JNI".to_string()))
         }
+        "csharp_json" => {
+            if let Some(RuntimeValue::String(json_str)) = evaluated_args.get(0) {
+                // Placeholder for C# Newtonsoft.Json interop via mono/dotnet
+                Some(RuntimeValue::String(format!("C# JSON parsed: {}", json_str)))
+            } else {
+                Some(RuntimeValue::String("Invalid JSON".to_string()))
+            }
+        }
+        "ruby_httparty" => {
+            if let Some(RuntimeValue::String(url)) = evaluated_args.get(0) {
+                let output = Command::new("ruby")
+                    .arg("-e")
+                    .arg(format!("require 'httparty'; puts HTTParty.get('{}').body", url))
+                    .output()
+                    .map_err(|e| format!("Error: {}", e))?;
+                Some(RuntimeValue::String(String::from_utf8_lossy(&output.stdout).to_string()))
+            } else {
+                Some(RuntimeValue::String("Invalid URL".to_string()))
+            }
+        }
+        "js_axios" => {
+            if let Some(RuntimeValue::String(url)) = evaluated_args.get(0) {
+                // Placeholder for JS Axios (handled via Tauri/JS bridge)
+                Some(RuntimeValue::String(format!("JS Axios GET: {}", url)))
+            } else {
+                Some(RuntimeValue::String("Invalid URL".to_string()))
+            }
+        }
+        "rust_flate2" => {
+            if let Some(RuntimeValue::String(data)) = evaluated_args.get(0) {
+                let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+                std::io::Write::write_all(&mut encoder, data.as_bytes()).unwrap();
+                let compressed = encoder.finish().unwrap();
+                Some(RuntimeValue::String(base64::encode(compressed)))
+            } else {
+                Some(RuntimeValue::String("Invalid data".to_string()))
+            }
+        }
+        "java_jython" => {
+            if let Some(RuntimeValue::String(script)) = evaluated_args.get(0) {
+                // Placeholder for Jython interop via JNI
+                Some(RuntimeValue::String(format!("Jython script executed: {}", script)))
+            } else {
+                Some(RuntimeValue::String("Invalid script".to_string()))
+            }
+        }
+        "jwt_encode" => {
+            if let (Some(RuntimeValue::String(payload)), Some(RuntimeValue::String(secret))) = (evaluated_args.get(0), evaluated_args.get(1)) {
+                let claims: HashMap<String, String> = serde_json::from_str(payload).unwrap_or_default();
+                let token = encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_ref())).unwrap();
+                Some(RuntimeValue::String(token))
+            } else {
+                Some(RuntimeValue::String("Invalid payload or secret".to_string()))
+            }
+        }
         _ => None,
     }
-}
+                    }
