@@ -1,0 +1,3 @@
+fn path_basename(path) {
+    return string_split(path, "/")[-1]
+}
