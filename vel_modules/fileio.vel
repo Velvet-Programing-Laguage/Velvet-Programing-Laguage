@@ -1,0 +1,3 @@
+fn fileio_append(path, content) {
+    return fs_write(path, content, "append")
+}
