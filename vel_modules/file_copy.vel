@@ -1,0 +1,3 @@
+fn file_copy(src, dst) {
+    return fs_copy(src, dst)
+}
