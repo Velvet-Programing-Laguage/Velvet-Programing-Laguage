@@ -32,6 +32,21 @@ export function renderGUI(props) {
         });
     }
 
+    if (props.libraryActions) {
+        props.libraryActions.forEach(action => {
+            if (action.type === 'axios_get') {
+                const btn = document.createElement('button');
+                btn.textContent = `Axios GET: ${action.url}`;
+                btn.className = 'window-button';
+                btn.addEventListener('click', async () => {
+                    const response = await axios.get(action.url);
+                    console.log('Axios response:', response.data);
+                });
+                window.appendChild(btn);
+            }
+        });
+    }
+
     return window;
 }
 
@@ -40,6 +55,9 @@ export async function handleEvent(action) {
     for (const act of action) {
         if (act.type === 'say') {
             await invoke('execute_action', { action: act.value });
+        } else if (act.type === 'lodash_transform') {
+            const result = _.map(act.data, item => _.toUpper(item));
+            console.log('Lodash transform:', result);
         }
     }
 }
