@@ -1,0 +1,12 @@
+# CUDA module for GPU computing
+import cuda
+
+# Initialize CUDA device
+fn cuda_init(device_id: int) {
+    return cuda.init(device_id)
+}
+
+# Run matrix multiplication on GPU
+fn cuda_matrix_multiply(a: list, b: list) {
+    return cuda.matrix_multiply(a, b)
+}
