@@ -21,7 +21,6 @@ cat << "EOF"
   \ \    / /   \ \  \_|\ \ \  \____\ \    / /   \ \  \_|\ \  \ \  \ 
    \ \__/ /     \ \_______\ \_______\ \__/ /     \ \_______\  \ \__\
     \|__|/       \|_______|\|_______|\|__|/       \|_______|   \|__|
-                                                             
 EOF
 }
 
@@ -126,26 +125,6 @@ install_rust() {
     fi
 }
 
-install_go() {
-    if ! command -v go &>/dev/null; then
-        log "Installing Go..."
-        GO_VERSION="1.21.0"
-        if [ "$OS" = "Linux" ]; then
-            curl -LO https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz &>> "$LOGFILE" &
-            spinner $!
-            rm -rf /usr/local/go
-            tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
-            rm go${GO_VERSION}.linux-amd64.tar.gz
-            export PATH=$PATH:/usr/local/go/bin
-        elif [ "$OS" = "Darwin" ]; then
-            install_packages "go"
-        fi
-        log "Go installed."
-    else
-        log "Go found: $(go version)"
-    fi
-}
-
 install_node() {
     if ! command -v node &>/dev/null; then
         log "Installing Node.js..."
@@ -164,23 +143,6 @@ install_node() {
         log "Node.js installed."
     else
         log "Node.js found: $(node --version)"
-    fi
-}
-
-install_java() {
-    if ! command -v java &>/dev/null; then
-        log "Installing OpenJDK 17..."
-        case "$PKG_MANAGER" in
-            apt) install_packages "openjdk-17-jdk" ;;
-            dnf) install_packages "java-17-openjdk-devel" ;;
-            pacman) install_packages "jdk17-openjdk" ;;
-            zypper) install_packages "java-17-openjdk-devel" ;;
-            brew) install_packages "openjdk@17" ;;
-            *) warn "Manual Java installation required." ;;
-        esac
-        log "Java installed."
-    else
-        log "Java found: $(java -version 2>&1 | head -n1)"
     fi
 }
 
@@ -204,11 +166,10 @@ build_velvet() {
     spinner $!
     cd ..
 
-    log "Building Velvet CLI (Go)..."
+    log "Building Velvet CLI (Rust)..."
     cd cli
-    go build -o vel &>> "$LOGFILE" &
+    cargo build --release &>> "$LOGFILE" &
     spinner $!
-    mv vel /usr/local/bin/vel
     cd ..
 
     log "Building Velvet GUI (Tauri)..."
@@ -253,9 +214,7 @@ main() {
             ;;
     esac
 
-    install_java
     install_rust
-    install_go
     install_node
     install_tauri
 
