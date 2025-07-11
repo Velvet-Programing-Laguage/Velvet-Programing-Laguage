@@ -1,0 +1,3 @@
+fn compress_data(data) {
+    return string_compress(data)
+}
