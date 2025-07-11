@@ -1,2 +1,0 @@
-fn format(timestamp):
-    say "dateutil.format called"

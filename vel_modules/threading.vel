@@ -1,2 +1,0 @@
-fn run(task):
-    say "threading.run called with task"

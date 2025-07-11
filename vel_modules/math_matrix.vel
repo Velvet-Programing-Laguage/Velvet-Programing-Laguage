@@ -1,3 +1,0 @@
-fn math_matrix_add(matrix1, matrix2) {
-    return math_add(matrix1, matrix2)
-}

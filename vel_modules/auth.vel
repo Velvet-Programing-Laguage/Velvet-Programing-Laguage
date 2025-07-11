@@ -1,3 +1,0 @@
-fn auth_login(user, pass) {
-    return auth_verify(user, pass)
-}

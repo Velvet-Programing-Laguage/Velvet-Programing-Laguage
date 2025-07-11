@@ -1,3 +1,0 @@
-fn json_schema_validate(json, schema) {
-    return json_validate_schema(json, schema)
-}

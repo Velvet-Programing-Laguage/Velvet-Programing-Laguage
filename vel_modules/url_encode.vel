@@ -1,3 +1,0 @@
-fn url_encode(str) {
-    return string_url_encode(str)
-}

@@ -1,3 +1,0 @@
-fn image_rotate(path, angle) {
-    return image_process(path, "rotate", angle)
-}

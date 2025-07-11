@@ -1,2 +1,0 @@
-fn match(pattern, text):
-    say "re.match called"

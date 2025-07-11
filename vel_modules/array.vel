@@ -1,3 +1,0 @@
-fn array_push(arr, item) {
-    return arr + [item]
-}

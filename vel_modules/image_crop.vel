@@ -1,3 +1,0 @@
-fn image_crop(path, x, y, width, height) {
-    return image_process(path, "crop", x, y, width, height)
-}

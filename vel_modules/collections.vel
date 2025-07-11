@@ -1,2 +1,0 @@
-fn counter(items):
-    say "collections.counter called"

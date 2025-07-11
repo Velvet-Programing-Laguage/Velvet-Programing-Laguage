@@ -1,2 +1,0 @@
-fn upload(server, user, pass, file):
-    say "ftp.upload called with server, user, pass, and file"

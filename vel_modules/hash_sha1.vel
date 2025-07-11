@@ -1,3 +1,0 @@
-fn hash_sha1(data) {
-    return crypto_sha1(data)
-}

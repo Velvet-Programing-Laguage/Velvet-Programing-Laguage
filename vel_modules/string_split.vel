@@ -1,3 +1,0 @@
-fn string_split(str, delimiter) {
-    return string_divide(str, delimiter)
-}

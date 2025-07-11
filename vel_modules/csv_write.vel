@@ -1,3 +1,0 @@
-fn csv_write(path, rows) {
-    return csv_save(path, rows)
-}

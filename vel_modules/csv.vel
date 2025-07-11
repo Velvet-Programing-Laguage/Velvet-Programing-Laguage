@@ -1,2 +1,0 @@
-fn read(path):
-    say "csv.read called"

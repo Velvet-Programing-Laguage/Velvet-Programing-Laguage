@@ -1,2 +1,0 @@
-fn send(server, user, pass, to, subject, body):
-    say "smtplib.send called with server, user, pass, to, subject, and body"

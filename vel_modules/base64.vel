@@ -1,3 +1,0 @@
-fn base64_encode(str) {
-    return string_base64_encode(str)
-}

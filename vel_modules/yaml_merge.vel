@@ -1,3 +1,0 @@
-fn yaml_merge(yaml1, yaml2) {
-    return yaml_combine(yaml1, yaml2)
-}

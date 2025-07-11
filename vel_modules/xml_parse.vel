@@ -1,3 +1,0 @@
-fn xml_parse(xml_str) {
-    return xml_to_json(xml_str)
-}

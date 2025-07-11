@@ -1,3 +1,0 @@
-fn time_format(timestamp, format) {
-    return dateutil_format(timestamp, format)
-}

@@ -1,3 +1,0 @@
-fn db_mongo_connect(url) {
-    return db_connect("mongo", url)
-}

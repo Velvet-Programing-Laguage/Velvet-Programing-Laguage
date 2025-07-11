@@ -1,2 +1,0 @@
-fn capture():
-    say "camera.capture called"

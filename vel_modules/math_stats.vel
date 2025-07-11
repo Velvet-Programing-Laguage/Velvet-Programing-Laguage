@@ -1,3 +1,0 @@
-fn math_stats_mean(numbers) {
-    return math_mean(numbers)
-}

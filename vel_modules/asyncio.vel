@@ -1,2 +1,0 @@
-fn run(task):
-    say "asyncio.run called with task"

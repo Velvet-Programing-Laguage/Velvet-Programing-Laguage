@@ -1,3 +1,0 @@
-fn net_socket_connect(host, port) {
-    return net_connect(host, port)
-}

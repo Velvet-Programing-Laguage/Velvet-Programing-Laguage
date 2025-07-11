@@ -1,3 +1,0 @@
-fn xml_write(data, path) {
-    return xml_save(data, path)
-}

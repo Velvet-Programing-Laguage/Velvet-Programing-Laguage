@@ -1,3 +1,0 @@
-fn string_trim(str) {
-    return string_strip(str)
-}

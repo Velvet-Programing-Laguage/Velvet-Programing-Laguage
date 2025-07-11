@@ -1,2 +1,0 @@
-fn init():
-    say "pygame.init called via JNI"

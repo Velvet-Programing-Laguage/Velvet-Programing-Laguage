@@ -1,7 +1,0 @@
-fn jython_exec(script) {
-    return java_jython(script)
-}
-
-fn jython_eval(expression) {
-    return java_jython("eval", expression)
-}

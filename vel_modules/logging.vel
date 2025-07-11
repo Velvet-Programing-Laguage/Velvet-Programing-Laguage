@@ -1,2 +1,0 @@
-fn info(msg):
-    say "logging.info called"

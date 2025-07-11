@@ -1,8 +1,0 @@
-def add(a, b):
-    say "math.add called"
-
-def sub(a, b):
-    say "math.sub called"
-
-def sqrt(n):
-    say "math.sqrt called"

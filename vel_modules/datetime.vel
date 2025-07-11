@@ -1,3 +1,0 @@
-fn datetime_now() {
-    return time_now()
-}

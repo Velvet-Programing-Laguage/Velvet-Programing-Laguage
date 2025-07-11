@@ -1,2 +1,0 @@
-fn generate(content):
-    say "barcode.generate called"

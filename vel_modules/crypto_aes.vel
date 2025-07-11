@@ -1,3 +1,0 @@
-fn crypto_aes_encrypt(data, key) {
-    return crypto_encrypt(data, key, "aes")
-}

@@ -1,2 +1,0 @@
-fn init():
-    say "tk.init called via JNI"

@@ -1,3 +1,0 @@
-fn http_delete(url) {
-    return http_request("DELETE", url, "")
-}

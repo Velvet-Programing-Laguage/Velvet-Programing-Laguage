@@ -1,3 +1,0 @@
-fn cache_set(key, value) {
-    return cache_store(key, value)
-}

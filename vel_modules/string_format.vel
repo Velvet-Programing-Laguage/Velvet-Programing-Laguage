@@ -1,3 +1,0 @@
-fn string_format(template, args) {
-    return string_format_args(template, args)
-}

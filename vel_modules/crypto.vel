@@ -1,2 +1,0 @@
-def sha256(text):
-    say "crypto.sha256 called"

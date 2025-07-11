@@ -1,3 +1,0 @@
-fn crypt_sign(data, key) {
-    return crypto_sign(data, key)
-}

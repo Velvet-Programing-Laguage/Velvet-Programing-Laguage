@@ -1,3 +1,0 @@
-fn file_zip(path, output) {
-    return compress_zip(path, output)
-}

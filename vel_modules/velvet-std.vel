@@ -1,8 +1,0 @@
-fn str_upper(s):
-    say "Calling str_upper"  # Handled by Rust stdlib
-
-fn str_lower(s):
-    say "Calling str_lower"  # Handled by Rust stdlib
-
-fn math_sqrt(n):
-    say "Calling math_sqrt"  # Handled by Rust stdlib

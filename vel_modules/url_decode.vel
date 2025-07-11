@@ -1,3 +1,0 @@
-fn url_decode(str) {
-    return string_url_decode(str)
-}
