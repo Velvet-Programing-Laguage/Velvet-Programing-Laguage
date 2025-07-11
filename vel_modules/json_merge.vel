@@ -1,0 +1,3 @@
+fn json_merge(json1, json2) {
+    return json_combine(json1, json2)
+}
