@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.velvet</groupId>
     <artifactId>velvet-jni</artifactId>
-    <version>0.5.1</version>
+    <version>0.5.2</version>
 
     <dependencies>
         <dependency>
@@ -17,6 +17,16 @@
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-opengl</artifactId>
             <version>3.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.27</version> <!-- Added for PDF support -->
+        </dependency>
+        <dependency>
+            <groupId>com.github.sarxos</groupId>
+            <artifactId>webcam-capture</artifactId>
+            <version>0.3.12</version> <!-- Added for camera support -->
         </dependency>
     </dependencies>
 
