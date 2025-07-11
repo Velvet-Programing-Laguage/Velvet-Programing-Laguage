@@ -1,0 +1,3 @@
+fn config_load(path) {
+    return fs_read(path)
+}
