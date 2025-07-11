@@ -176,7 +176,7 @@ vel run test.vel
 
 ###### Random Code in Velvet
 
-<<< @ Velvet 1.0 example with detailed comments to help learning
+<<<  @ Velvet 1.0 example with detailed comments to help learning
 
 @ Importing modules:
 @  - .> means import standard library or module
@@ -189,8 +189,8 @@ use <io>          @ import full io module
 @ Declare a constant value, cannot be changed later
 const PI = 3.1415926535
 
-@ Declare a variable with type String, initialized to "Velvet 1.0"
-val version: String = "Velvet 1.0"
+@ Declare a variable with type String, initialized to "Velvet 0.1"
+val version: String = "Velvet 0.1"
 
 @ Define a function named circle_area that calculates the area of a circle
 @ It takes one argument: radius (type Number)
@@ -222,30 +222,30 @@ let users = [
 fun main() -> 
     say "Language version: " + version   @ Print the version string
 
-    let r = 5                           @ Define radius variable
+   let r = 5                           @ Define radius variable
     let area = circle_area(r)           @ Calculate area using our function
     say "Circle area with radius " + r + ": " + area
 
-    let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  @ Define a list of numbers
+  let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  @ Define a list of numbers
     let doubled_numbers = numbers |> map(double)    @ Double each number using map and lambda
     say "Doubled numbers: " + doubled_numbers
 
-    let filtered = filter_greater_than(doubled_numbers, 10)  @ Filter doubled numbers greater than 10
+  let filtered = filter_greater_than(doubled_numbers, 10)  @ Filter doubled numbers greater than 10
     say "Numbers > 10: " + filtered
 
-    @ Loop through each user in users list
+  @ Loop through each user in users list
     for user in users:
         if user.active:                      @ Check if user is active
             say "Active user: " + user.name + ", age: " + user.age
         else:
             say "Inactive user: " + user.name
 
-    @ Use match statement to handle different cases for user's name
+  @ Use match statement to handle different cases for user's name
     match users[0].name:
         "Michal" | say "Hello Michal! Nice to see you!"  @ If name is Michal
         _ | say "Unknown user"                           @ Default case for others
 
-    @ Example of error handling using try-catch
+  @ Example of error handling using try-catch
     try:
         let x = 10 / 0                  @ This will cause an error (division by zero)
         say "Division result: " + x
@@ -253,7 +253,7 @@ fun main() ->
         say "An error occurred: " + e   @ Catch and print the error message
 
 @ Call main function to run the program
-main()  >>>
+main()  >>> 
 
 ### CLI Commands
 
@@ -276,3 +276,11 @@ vel install < Go to the directory with your code, save the vel.json file, run ve
 ### CLI Go
 
 ### Python Interpreter
+
+### Development Roadmap
+
+### Contributing
+
+### License
+
+### Contact
