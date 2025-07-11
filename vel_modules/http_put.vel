@@ -1,0 +1,3 @@
+fn http_put(url, data) {
+    return http_request("PUT", url, data)
+}
