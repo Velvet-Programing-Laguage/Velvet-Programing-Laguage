@@ -1,50 +1,35 @@
 const { invoke } = window.__TAURI__.tauri;
+import { renderGUI, handleEvent } from './gui.js';
 
-async function initApp() {
-    const guiData = await invoke('get_gui_data', { file: 'main.vel' });
-    renderGUI(guiData);
-}
+async function init() {
+    const guiData = await invoke('execute_velvet', { file: 'main.vel' });
+    const container = document.getElementById('app');
+    container.innerHTML = '';
 
-function renderGUI(data) {
-    const app = document.getElementById('app');
-    app.innerHTML = '';
-    data.forEach(item => {
-        if (item.type === 'window') {
-            const window = document.createElement('div');
-            window.className = 'bg-white p-4 rounded shadow flex flex-col items-center';
-            let content = `<h1 class="text-xl font-bold mb-2">${item.props.title}</h1>`;
-            if (item.props.buttons) {
-                content += item.props.buttons.map(btn => `
-                    <button onclick="handleAction('${btn.action[0].value}')">
-                        ${btn.text}
-                    </button>
-                `).join('');
+    guiData.forEach(element => {
+        if (element.type === 'window') {
+            const window = renderGUI(element.props);
+            container.appendChild(window);
+
+            // Attach event listeners for buttons
+            if (element.props.buttons) {
+                element.props.buttons.forEach(button => {
+                    const btnElement = document.getElementById(`button-${button.text}`);
+                    btnElement.addEventListener('click', () => handleEvent(button.action));
+                });
             }
-            if (item.props.inputs) {
-                content += item.props.inputs.map(input => `
-                    <input id="${input.id}" placeholder="${input.placeholder}"
-                           oninput="updateInput('${input.id}', this.value)" />
-                `).join('');
+
+            // Attach event listeners for text inputs
+            if (element.props.inputs) {
+                element.props.inputs.forEach(input => {
+                    const inputElement = document.getElementById(input.id);
+                    inputElement.addEventListener('input', (e) => {
+                        invoke('update_input', { id: input.id, value: e.target.value });
+                    });
+                });
             }
-            if (item.props.lists) {
-                content += item.props.lists.map(list => `
-                    <ul class="list-disc">
-                        ${list.items.map(item => `<li>${item}</li>`).join('')}
-                    </ul>
-                `).join('');
-            }
-            window.innerHTML = content;
-            app.appendChild(window);
         }
     });
 }
 
-async function handleAction(action) {
-    await invoke('execute_action', { action });
-}
-
-async function updateInput(id, value) {
-    await invoke('update_input', { id, value });
-}
-
-window.addEventListener('DOMContentLoaded', initApp);
+window.addEventListener('DOMContentLoaded', init);
