@@ -7,7 +7,9 @@ require (
     github.com/go-resty/resty/v2 v2.13.1
     github.com/cheggaaa/pb/v3 v3.1.5
     github.com/fatih/color v1.17.0
-    github.com/Masterminds/semver v1.5.0 // Added for version checking
+    github.com/Masterminds/semver v1.5.0
+    github.com/go-python/gopy v0.3.0 // Added for Python interop
+    github.com/goplus/llgo v0.9.0 // Added for C++ interop
 )
 
 require (
