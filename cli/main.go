@@ -6,6 +6,8 @@ import (
     "os"
 )
 
+var logger = setupLogger(false)
+
 func main() {
     initCmd := flag.NewFlagSet("init", flag.ExitOnError)
     installCmd := flag.NewFlagSet("install", flag.ExitOnError)
@@ -20,8 +22,8 @@ func main() {
     watchCmd := flag.NewFlagSet("watch", flag.ExitOnError)
 
     if len(os.Args) < 2 {
-        fmt.Println("Usage: vel <command> [args]")
-        fmt.Println("Commands: init, install, run, start, build, test, debug, update, package, docs, watch")
+        logger.Println("Usage: vel <command> [args]")
+        logger.Println("Commands: init, install, run, start, build, test, debug, update, package, docs, watch")
         os.Exit(1)
     }
 
@@ -60,62 +62,64 @@ func main() {
         watchCmd.Parse(os.Args[2:])
         watchProject()
     default:
-        fmt.Println("Unknown command:", os.Args[1])
+        logger.Println("Unknown command:", os.Args[1])
         os.Exit(1)
     }
 }
 
 func initProject() {
-    fmt.Println("Initializing Velvet project...")
+    config := loadConfig()
+    logger.Println("Initializing Velvet project...")
     // Create vel.json and main.vel
 }
 
 func installDependencies() {
-    fmt.Println("Installing dependencies...")
+    logger.Println("Installing dependencies...")
     // Install python_requests, ruby_httparty, etc.
 }
 
 func runFile(file string) {
-    fmt.Println("Running file:", file)
+    logger.Println("Running file:", file)
     // Execute Velvet file via Rust core
 }
 
 func startGui() {
-    fmt.Println("Starting Tauri GUI...")
+    logger.Println("Starting Tauri GUI...")
     // Launch Tauri GUI
 }
 
 func buildProject() {
-    fmt.Println("Building project...")
+    logger.Println("Building project...")
     // Compile to binaries
 }
 
 func runTests() {
-    fmt.Println("Running tests...")
+    logger.Println("Running tests...")
     // Execute test*.vel files
 }
 
 func debugProject() {
-    fmt.Println("Debugging project...")
+    logger = setupLogger(true)
+    logger.Println("Debugging project...")
     // Run with debug logging
 }
 
 func updateDependencies() {
-    fmt.Println("Updating dependencies...")
+    logger.Println("Updating dependencies...")
     // Update external libraries
 }
 
 func packageProject() {
-    fmt.Println("Packaging project...")
+    logger.Println("Packaging project...")
     // Create distributable package
 }
 
 func generateDocs() {
-    fmt.Println("Generating documentation...")
+    logger.Println("Generating documentation...")
     // Generate Velvet docs
 }
 
 func watchProject() {
-    fmt.Println("Watching project for changes...")
+    logger.Println("Watching project for changes...")
     // Watch and auto-reload
 }
