@@ -24,13 +24,13 @@ func main() {
     case "install":
         handleInstall(args)
     case "build":
-        fmt.Println("Building project...")
+        buildProject()
     case "debug":
-        fmt.Println("Debugging project...")
+        debugProject()
     case "start":
         startProject(args)
     case "errors":
-        fmt.Println("Displaying errors...")
+        displayErrors()
     case "update":
         handleUpdate(args)
     case "reset":
@@ -52,14 +52,15 @@ func getLibraryPath() string {
 
 func handleInstall(args []string) {
     if len(args) < 2 || args[0] != "<.>" {
-        fmt.Println("Usage: vel install <.> <language> <command>")
+        fmt.Println("Usage: vel install <.> <language> <dependency>")
         os.Exit(1)
     }
 
     language := strings.ToLower(args[1])
+    depName := strings.ReplaceAll(args[2], "/", "_") // Sanitize for directory name
     command := strings.Join(args[2:], " ")
     libraryPath := getLibraryPath()
-    envPath := filepath.Join(libraryPath, language, command)
+    envPath := filepath.Join(libraryPath, language, depName)
 
     os.MkdirAll(envPath, 0755)
 
@@ -67,10 +68,19 @@ func handleInstall(args []string) {
     switch language {
     case "python":
         cmd = exec.Command("python", "-m", "venv", envPath)
-        cmd.Run()
-        cmd = exec.Command(filepath.Join(envPath, "bin", "pip"), "install", command)
+        if err := cmd.Run(); err != nil {
+            fmt.Printf("Error creating Python venv: %v\n", err)
+            os.Exit(1)
+        }
+        if runtime.GOOS == "windows" {
+            cmd = exec.Command(filepath.Join(envPath, "Scripts", "pip"), "install", command)
+        } else {
+            cmd = exec.Command(filepath.Join(envPath, "bin", "pip"), "install", command)
+        }
     case "ruby":
-        cmd = exec.Command("bundle", "install", "--path", envPath)
+        gemfile := filepath.Join(envPath, "Gemfile")
+        os.WriteFile(gemfile, []byte(fmt.Sprintf("source 'https://rubygems.org'\ngem '%s'", command)), 0644)
+        cmd = exec.Command("bundle", "install", "--path", envPath, "--gemfile", gemfile)
     case "rust":
         cmd = exec.Command("cargo", "install", "--root", envPath, command)
     case "go":
@@ -84,8 +94,10 @@ func handleInstall(args []string) {
         cmd.Dir = envPath
     case "java":
         cmd = exec.Command("mvn", "install", "-Ddir="+envPath, command)
-    case "javascript":
+    case "javascript", "typescript":
         cmd = exec.Command("npm", "install", "--prefix", envPath, command)
+    case "kotlin":
+        cmd = exec.Command("gradle", "install", "-Ddir="+envPath, command)
     default:
         fmt.Printf("Unsupported language: %s\n", language)
         os.Exit(1)
@@ -101,19 +113,51 @@ func handleInstall(args []string) {
 }
 
 func initProject() {
-    os.Mkdir("src", 0755)
-    os.Mkdir("src/config", 0755)
+    os.MkdirAll("src/config", 0755)
     configPath := "src/config/vel.config"
     os.WriteFile(configPath, []byte("# Velvet configuration\n"), 0644)
     fmt.Println("Initialized Velvet project")
 }
 
-func startProject(args []string) {
-    if len(args) == 0 {
-        fmt.Println("Starting default Velvet project...")
-    } else {
-        fmt.Printf("Starting Velvet file: %s\n", args[0])
+func buildProject() {
+    fmt.Println("Building Velvet project...")
+    cmd := exec.Command("cargo", "build", "--release")
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    if err := cmd.Run(); err != nil {
+        fmt.Printf("Error building project: %v\n", err)
+        os.Exit(1)
     }
+}
+
+func debugProject() {
+    fmt.Println("Debugging Velvet project...")
+    cmd := exec.Command("cargo", "run")
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    if err := cmd.Run(); err != nil {
+        fmt.Printf("Error debugging project: %v\n", err)
+        os.Exit(1)
+    }
+}
+
+func startProject(args []string) {
+    script := "tests/test_velvet.vel"
+    if len(args) > 0 {
+        script = args[0]
+    }
+    cmd := exec.Command("./velvet_core", script)
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    if err := cmd.Run(); err != nil {
+        fmt.Printf("Error starting project: %v\n", err)
+        os.Exit(1)
+    }
+}
+
+func displayErrors() {
+    fmt.Println("Displaying recent errors...")
+    // Placeholder: Read error logs
 }
 
 func handleUpdate(args []string) {
@@ -134,7 +178,7 @@ func printHelp() {
     fmt.Println(`
 Velvet CLI Commands:
   init                Initialize a new Velvet project
-  install <.> <lang> <cmd>  Install a dependency in an isolated environment
+  install <.> <lang> <dep>  Install a dependency in an isolated environment
   build               Build the Velvet project
   debug               Run project in debug mode
   start [file.vel]    Start the Velvet application
