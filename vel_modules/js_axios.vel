@@ -1,0 +1,11 @@
+fn axios_get(url) {
+    return js_axios(url)
+}
+
+fn axios_post(url, data) {
+    return js_axios(url, "post", data)
+}
+
+fn axios_patch(url, data) {
+    return js_axios(url, "patch", data)
+}
