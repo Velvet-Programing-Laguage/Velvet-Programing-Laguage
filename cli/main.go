@@ -30,7 +30,7 @@ func main() {
         Run: func(cmd *cobra.Command, args []string) {
             config := VelConfig{
                 Name:    "velvet-project",
-                Version: "0.5.2",
+                Version: "0.5.3",
                 Dependencies: map[string]string{
                     "fs": "^1.0.0", "http": "^1.0.0", "time": "^1.0.0", "crypto": "^1.0.0",
                     "math": "^1.0.0", "os": "^1.0.0", "random": "^1.0.0", "string": "^1.0.0",
@@ -156,11 +156,16 @@ func main() {
                     exec.Command("gem", "install", "httparty").Run()
                     color.Green("Installed Ruby HTTParty")
                 case "cpp_boost":
-                    // Assume Boost is installed via system package manager
-                    color.Green("Assuming C++ Boost is installed")
+                    color.Green("Assuming C++ Boost is installed via system package manager")
                 case "csharp_json":
-                    // Assume Newtonsoft.Json is installed via NuGet
-                    color.Green("Assuming C# Newtonsoft.Json is installed")
+                    color.Green("Assuming C# Newtonsoft.Json is installed via NuGet")
+                case "js_axios":
+                    exec.Command("npm", "install", "axios").Dir = "gui"
+                    color.Green("Installed JavaScript Axios")
+                case "rust_flate2":
+                    color.Green("Rust flate2 included in core")
+                case "java_jython":
+                    color.Green("Java Jython included in JNI")
                 default:
                     resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, versionConstraint))
                     if err != nil {
@@ -232,13 +237,16 @@ func main() {
                 } else {
                     color.Cyan("Updating %s from %s to %s", name, versionConstraint, latestVersion)
                     config.Dependencies[name] = "^" + latestVersion
-                    if name == "python_requests" {
+                    switch name {
+                    case "python_requests":
                         exec.Command("pip3", "install", "--upgrade", "requests").Run()
-                    } else if name == "ruby_httparty" {
+                    case "ruby_httparty":
                         exec.Command("gem", "update", "httparty").Run()
-                    } else if name == "cpp_boost" || name == "csharp_json" {
+                    case "cpp_boost", "csharp_json":
                         color.Yellow("Manual update required for %s", name)
-                    } else {
+                    case "js_axios":
+                        exec.Command("npm", "install", "axios@latest").Dir = "gui"
+                    default:
                         resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, latestVersion))
                         if err != nil {
                             color.Red("Error downloading %s@%s: %v", name, latestVersion, err)
