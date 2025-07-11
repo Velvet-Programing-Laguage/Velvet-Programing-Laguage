@@ -1,0 +1,3 @@
+fn hash_md5(data) {
+    return crypto_md5(data)
+}
