@@ -1,0 +1,7 @@
+fn zlib_compress(data) {
+    return rust_flate2("compress", data)
+}
+
+fn zlib_decompress(compressed) {
+    return rust_flate2("decompress", compressed)
+}
