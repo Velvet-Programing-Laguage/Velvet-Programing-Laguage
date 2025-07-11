@@ -7,6 +7,7 @@ pub struct Config {
     pub debug: bool,
     pub dependencies: std::collections::HashMap<String, String>,
     pub gui: GuiConfig,
+    pub plugins: Vec<String>,
 }
 
 #[derive(Default, serde::Deserialize)]
