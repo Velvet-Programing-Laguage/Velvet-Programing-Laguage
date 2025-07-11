@@ -1,11 +1,41 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-button {
-    @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-2;
+.window {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 10px auto;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
-input {
-    @apply border border-gray-300 rounded p-2 m-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500;
+.window-title {
+    font-size: 24px;
+    margin: 0 0 20px 0;
+    color: #333;
+    text-align: center;
+}
+
+.window-button {
+    padding: 10px 20px;
+    margin: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.window-button:hover {
+    background-color: #0056b3;
+}
+
+.window-input {
+    padding: 8px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: calc(100% - 36px);
+    font-size: 16px;
 }
