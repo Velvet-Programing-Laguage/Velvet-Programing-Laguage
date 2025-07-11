@@ -161,8 +161,55 @@ func displayErrors() {
 }
 
 func handleUpdate(args []string) {
-    fmt.Println("Updating dependencies...")
-    // Similar to handleInstall, implement update logic
+    if len(args) < 2 || args[0] != "<.>" {
+        fmt.Println("Usage: vel update <.> <language> <dependency>")
+        os.Exit(1)
+    }
+
+    language := strings.ToLower(args[1])
+    depName := strings.ReplaceAll(args[2], "/", "_")
+    command := strings.Join(args[2:], " ")
+    libraryPath := getLibraryPath()
+    envPath := filepath.Join(libraryPath, language, depName)
+
+    var cmd *exec.Cmd
+    switch language {
+    case "python":
+        if runtime.GOOS == "windows" {
+            cmd = exec.Command(filepath.Join(envPath, "Scripts", "pip"), "install", "--upgrade", command)
+        } else {
+            cmd = exec.Command(filepath.Join(envPath, "bin", "pip"), "install", "--upgrade", command)
+        }
+    case "ruby":
+        gemfile := filepath.Join(envPath, "Gemfile")
+        cmd = exec.Command("bundle", "update", "--gemfile", gemfile)
+    case "rust":
+        cmd = exec.Command("cargo", "install", "--root", envPath, "--force", command)
+    case "go":
+        cmd = exec.Command("go", "get", "-u", command)
+        cmd.Dir = envPath
+    case "crystal":
+        cmd = exec.Command("crystal", "deps", "update", command)
+        cmd.Dir = envPath
+    case "elixir":
+        cmd = exec.Command("mix", "deps.update", command)
+        cmd.Dir = envPath
+    case "javascript", "typescript":
+        cmd = exec.Command("npm", "update", "--prefix", envPath, command)
+    case "java", "kotlin":
+        cmd = exec.Command("mvn", "install", "-Ddir="+envPath, "-U", command)
+    default:
+        fmt.Printf("Unsupported language: %s\n", language)
+        os.Exit(1)
+    }
+
+    cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    if err := cmd.Run(); err != nil {
+        fmt.Printf("Error updating %s for %s: %v\n", command, language, err)
+        os.Exit(1)
+    }
+    fmt.Printf("Updated %s for %s in %s\n", command, language, envPath)
 }
 
 func resetEnvironments() {
