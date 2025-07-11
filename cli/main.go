@@ -3,6 +3,7 @@ package main
 import (
     "encoding/json"
     "fmt"
+    "github.com/Masterminds/semver"
     "github.com/cheggaaa/pb/v3"
     "github.com/fatih/color"
     "github.com/go-resty/resty/v2"
@@ -29,7 +30,7 @@ func main() {
         Run: func(cmd *cobra.Command, args []string) {
             config := VelConfig{
                 Name:    "velvet-project",
-                Version: "0.5.1",
+                Version: "0.5.2",
                 Dependencies: map[string]string{
                     "fs": "^1.0.0", "http": "^1.0.0", "time": "^1.0.0", "crypto": "^1.0.0",
                     "math": "^1.0.0", "os": "^1.0.0", "random": "^1.0.0", "string": "^1.0.0",
@@ -121,11 +122,32 @@ func main() {
             bar := pb.StartNew(count)
             bar.SetTemplateString(`{{ string . "prefix" | green }} {{ bar . "[" "=" ">" "-" "]"}} {{counters .}} {{percent .}} {{rtime . "ETA %s"}} {{speed . " %s/s"}}`)
 
-            for name, version := range config.Dependencies {
-                bar.Set("prefix", fmt.Sprintf("Installing %s@%s ", name, version))
-                resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, version))
+            if err := os.MkdirAll("vel_modules_cache", 0755); err != nil {
+                color.Red("Error creating vel_modules_cache directory: %v", err)
+                return
+            }
+
+            for name, versionConstraint := range config.Dependencies {
+                bar.Set("prefix", fmt.Sprintf("Installing %s@%s ", name, versionConstraint))
+                cachePath := filepath.Join("vel_modules_cache", fmt.Sprintf("%s-%s.vel", name, versionConstraint))
+                modulePath := filepath.Join("vel_modules", name+".vel")
+
+                // Check cache
+                if _, err := os.Stat(cachePath); err == nil {
+                    color.Yellow("Using cached %s@%s", name, versionConstraint)
+                    if err := copyFile(cachePath, modulePath); err != nil {
+                        color.Red("Error copying cached module %s: %v", name, err)
+                        bar.Increment()
+                        continue
+                    }
+                    bar.Increment()
+                    continue
+                }
+
+                // Fetch from repository
+                resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, versionConstraint))
                 if err != nil {
-                    color.Red("Error downloading %s@%s: %v", name, version, err)
+                    color.Red("Error downloading %s@%s: %v", name, versionConstraint, err)
                     bar.Increment()
                     continue
                 }
@@ -134,18 +156,124 @@ func main() {
                     bar.Increment()
                     continue
                 }
-                modulePath := filepath.Join("vel_modules", name+".vel")
                 if err := ioutil.WriteFile(modulePath, resp.Body(), 0644); err != nil {
                     color.Red("Error writing %s: %v", modulePath, err)
                     bar.Increment()
                     continue
                 }
-                color.Green("Successfully installed %s@%s", name, version)
+                // Cache the module
+                if err := ioutil.WriteFile(cachePath, resp.Body(), 0644); err != nil {
+                    color.Yellow("Warning: Failed to cache %s@%s: %v", name, versionConstraint, err)
+                }
+                color.Green("Successfully installed %s@%s", name, versionConstraint)
                 bar.Increment()
-                time.Sleep(time.Millisecond * 300) // Simulate network delay
+                time.Sleep(time.Millisecond * 300)
             }
             bar.Finish()
             color.Green("All dependencies installed successfully")
+        },
+    }
+
+    var updateCmd = &cobra.Command{
+        Use:   "update",
+        Short: "Update Velvet dependencies to latest compatible versions",
+        Run: func(cmd *cobra.Command, args []string) {
+            color.Cyan("Checking for dependency updates...")
+            configData, err := ioutil.ReadFile("vel.json")
+            if err != nil {
+                color.Red("Error reading vel.json: %v", err)
+                return
+            }
+            var config VelConfig
+            if err := json.Unmarshal(configData, &config); err != nil {
+                color.Red("Error parsing vel.json: %v", err)
+                return
+            }
+
+            client := resty.New()
+            count := len(config.Dependencies)
+            bar := pb.StartNew(count)
+            bar.SetTemplateString(`{{ string . "prefix" | green }} {{ bar . "[" "=" ">" "-" "]"}} {{counters .}} {{percent .}} {{rtime . "ETA %s"}}`)
+
+            for name, versionConstraint := range config.Dependencies {
+                bar.Set("prefix", fmt.Sprintf("Checking %s@%s ", name, versionConstraint))
+                constraint, err := semver.NewConstraint(versionConstraint)
+                if err != nil {
+                    color.Red("Invalid version constraint for %s: %v", name, err)
+                    bar.Increment()
+                    continue
+                }
+                // Mock fetching latest version
+                latestVersion := "1.1.0" // Replace with actual repository query
+                latest, err := semver.NewVersion(latestVersion)
+                if err != nil {
+                    color.Red("Invalid latest version for %s: %v", name, err)
+                    bar.Increment()
+                    continue
+                }
+                if constraint.Check(latest) {
+                    color.Yellow("%s@%s is up to date", name, versionConstraint)
+                } else {
+                    color.Cyan("Updating %s from %s to %s", name, versionConstraint, latestVersion)
+                    config.Dependencies[name] = "^" + latestVersion
+                    resp, err := client.R().Get(fmt.Sprintf("https://mock-repo/%s/%s", name, latestVersion))
+                    if err != nil {
+                        color.Red("Error downloading %s@%s: %v", name, latestVersion, err)
+                        bar.Increment()
+                        continue
+                    }
+                    modulePath := filepath.Join("vel_modules", name+".vel")
+                    cachePath := filepath.Join("vel_modules_cache", fmt.Sprintf("%s-%s.vel", name, latestVersion))
+                    if err := ioutil.WriteFile(modulePath, resp.Body(), 0644); err != nil {
+                        color.Red("Error writing %s: %v", modulePath, err)
+                        bar.Increment()
+                        continue
+                    }
+                    if err := ioutil.WriteFile(cachePath, resp.Body(), 0644); err != nil {
+                        color.Yellow("Warning: Failed to cache %s@%s: %v", name, latestVersion, err)
+                    }
+                }
+                bar.Increment()
+                time.Sleep(time.Millisecond * 200)
+            }
+            bar.Finish()
+
+            // Update vel.json with new versions
+            configData, _ = json.MarshalIndent(config, "", "  ")
+            if err := ioutil.WriteFile("vel.json", configData, 0644); err != nil {
+                color.Red("Error updating vel.json: %v", err)
+                return
+            }
+            color.Green("Dependencies updated successfully")
+        },
+    }
+
+    var buildCmd = &cobra.Command{
+        Use:   "build",
+        Short: "Build Velvet project into a standalone binary",
+        Run: func(cmd *cobra.Command, args []string) {
+            color.Cyan("Building Velvet project...")
+            if _, err := os.Stat("main.vel"); os.IsNotExist(err) {
+                color.Red("No main.vel file found")
+                return
+            }
+            coreCmd := exec.Command("cargo", "build", "--release")
+            coreCmd.Dir = "core"
+            coreCmd.Stdout = os.Stdout
+            coreCmd.Stderr = os.Stderr
+            if err := coreCmd.Run(); err != nil {
+                color.Red("Error building core: %v", err)
+                return
+            }
+            tauriCmd := exec.Command("npm", "run", "tauri", "build")
+            tauriCmd.Dir = "gui"
+            tauriCmd.Stdout = os.Stdout
+            tauriCmd.Stderr = os.Stderr
+            if err := tauriCmd.Run(); err != nil {
+                color.Red("Error building Tauri: %v", err)
+                return
+            }
+            color.Green("Project built successfully. Output in ./target/release and ./gui/src-tauri/target/release")
         },
     }
 
@@ -218,9 +346,17 @@ func main() {
         },
     }
 
-    rootCmd.AddCommand(initCmd, startCmd, debugCmd, installCmd, testCmd, runCmd, fmtCmd, lintCmd)
+    rootCmd.AddCommand(initCmd, startCmd, debugCmd, installCmd, updateCmd, buildCmd, testCmd, runCmd, fmtCmd, lintCmd)
     if err := rootCmd.Execute(); err != nil {
         color.Red("Error executing CLI: %v", err)
         os.Exit(1)
     }
+}
+
+func copyFile(src, dst string) error {
+    input, err := ioutil.ReadFile(src)
+    if err != nil {
+        return err
+    }
+    return ioutil.WriteFile(dst, input, 0644)
 }
