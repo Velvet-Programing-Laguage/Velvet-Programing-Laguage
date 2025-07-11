@@ -1,6 +1,6 @@
 [package]
 name = "velvet-core"
-version = "0.5.1"
+version = "0.5.2"
 edition = "2021"
 
 [dependencies]
@@ -32,6 +32,7 @@ sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio"] }
 clap = "4.4"
 tch = "0.10"
 bitcoin = "0.29"
+pdf-writer = "0.10" # Added for pdf module
 
 [lib]
 name = "velvet_core"
