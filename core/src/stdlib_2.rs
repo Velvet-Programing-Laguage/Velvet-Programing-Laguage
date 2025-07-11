@@ -26,8 +26,7 @@ pub fn register_stdlib_2(env: &mut std::collections::HashMap<String, RuntimeValu
         "asyncio_run", "threading_run", "argparse_parse", "logging_info",
         "uuid_generate", "hashlib_sha256", "net_ping", "db_connect",
         "csv_read", "sqlite_query", "pdf_create", "csharp_json",
-        "ruby_httparty", "js_axios", "rust_flate2", "java_jython",
-        "jwt_encode",
+        "ruby_httparty", "js_axios", "java_jython", "jwt_encode",
     ];
     for func in functions {
         env.insert(
@@ -269,49 +268,52 @@ pub fn stdlib_2_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
             Some(RuntimeValue::String("PDF created via JNI".to_string()))
         }
         "csharp_json" => {
-            if let Some(RuntimeValue::String(json_str)) = evaluated_args.get(0) {
+            if let (Some(RuntimeValue::String(action)), Some(RuntimeValue::String(json_str))) = (evaluated_args.get(0), evaluated_args.get(1)) {
                 // Placeholder for C# Newtonsoft.Json interop via mono/dotnet
-                Some(RuntimeValue::String(format!("C# JSON parsed: {}", json_str)))
+                match action.as_str() {
+                    "parse" => Some(RuntimeValue::String(format!("C# JSON parsed: {}", json_str))),
+                    "serialize" => Some(RuntimeValue::String(format!("C# JSON serialized: {}", json_str))),
+                    "validate" => Some(RuntimeValue::String(format!("C# JSON validated: {}", json_str))),
+                    _ => Some(RuntimeValue::String("Invalid action".to_string())),
+                }
             } else {
-                Some(RuntimeValue::String("Invalid JSON".to_string()))
+                Some(RuntimeValue::String("Invalid action or JSON".to_string()))
             }
         }
         "ruby_httparty" => {
-            if let Some(RuntimeValue::String(url)) = evaluated_args.get(0) {
+            if let (Some(RuntimeValue::String(url)), Some(RuntimeValue::String(method))) = (evaluated_args.get(0), evaluated_args.get(1)) {
+                let data = evaluated_args.get(2).map(|v| match v {
+                    RuntimeValue::String(s) => s.clone(),
+                    _ => "{}".to_string(),
+                }).unwrap_or("{}".to_string());
                 let output = Command::new("ruby")
                     .arg("-e")
-                    .arg(format!("require 'httparty'; puts HTTParty.get('{}').body", url))
+                    .arg(format!("require 'httparty'; puts HTTParty.{}('{}', body: '{}').body", method.to_lowercase(), url, data))
                     .output()
                     .map_err(|e| format!("Error: {}", e))?;
                 Some(RuntimeValue::String(String::from_utf8_lossy(&output.stdout).to_string()))
             } else {
-                Some(RuntimeValue::String("Invalid URL".to_string()))
+                Some(RuntimeValue::String("Invalid URL or method".to_string()))
             }
         }
         "js_axios" => {
-            if let Some(RuntimeValue::String(url)) = evaluated_args.get(0) {
+            if let (Some(RuntimeValue::String(url)), Some(RuntimeValue::String(method))) = (evaluated_args.get(0), evaluated_args.get(1)) {
+                let data = evaluated_args.get(2).map(|v| match v {
+                    RuntimeValue::String(s) => s.clone(),
+                    _ => "{}".to_string(),
+                }).unwrap_or("{}".to_string());
                 // Placeholder for JS Axios (handled via Tauri/JS bridge)
-                Some(RuntimeValue::String(format!("JS Axios GET: {}", url)))
+                Some(RuntimeValue::String(format!("JS Axios {}: {} with data {}", method, url, data)))
             } else {
-                Some(RuntimeValue::String("Invalid URL".to_string()))
-            }
-        }
-        "rust_flate2" => {
-            if let Some(RuntimeValue::String(data)) = evaluated_args.get(0) {
-                let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
-                std::io::Write::write_all(&mut encoder, data.as_bytes()).unwrap();
-                let compressed = encoder.finish().unwrap();
-                Some(RuntimeValue::String(base64::encode(compressed)))
-            } else {
-                Some(RuntimeValue::String("Invalid data".to_string()))
+                Some(RuntimeValue::String("Invalid URL or method".to_string()))
             }
         }
         "java_jython" => {
-            if let Some(RuntimeValue::String(script)) = evaluated_args.get(0) {
+            if let (Some(RuntimeValue::String(action)), Some(RuntimeValue::String(script))) = (evaluated_args.get(0), evaluated_args.get(1)) {
                 // Placeholder for Jython interop via JNI
-                Some(RuntimeValue::String(format!("Jython script executed: {}", script)))
+                Some(RuntimeValue::String(format!("Jython {} executed: {}", action, script)))
             } else {
-                Some(RuntimeValue::String("Invalid script".to_string()))
+                Some(RuntimeValue::String("Invalid action or script".to_string()))
             }
         }
         "jwt_encode" => {
@@ -325,4 +327,4 @@ pub fn stdlib_2_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
         }
         _ => None,
     }
-                    }
+}
