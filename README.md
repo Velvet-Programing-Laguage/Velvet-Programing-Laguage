@@ -10,7 +10,6 @@ Velvet is open-source, cross-platform, and built with a focus on developer produ
 
 - [Overview](#overview)
 - [Key Features](#key-features)
-- [Project Structure](#project-structure)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Writing Velvet Code](#writing-velvet-code)
@@ -19,8 +18,7 @@ Velvet is open-source, cross-platform, and built with a focus on developer produ
 - [Technical Architecture](#technical-architecture)
   - [Core (Rust)](#core-rust)
   - [CLI (Rust)](#cli-rust)
-  - [GUI (JavaScript/HTML/CSS, Tauri)](#gui-javascript-htmlcss-tauri)
-  - [Package Management Java](#package-management)
+  - [Python Interpreter](#python-interpreter)
 - [Development Roadmap](#development-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -33,7 +31,6 @@ Velvet is open-source, cross-platform, and built with a focus on developer produ
 Velvet is designed to make programming accessible yet powerful. It draws inspiration from the simplicity of shell scripting, the type safety and clarity of Rust, and the ease of package management from npm. Velvet's key goals are:
 
 - **Simplicity**: A minimal syntax with keywords like `say` (instead of `print`) and `do` for blocks, reducing cognitive load for developers.
-- **GUI Development**: A built-in DSL for creating GUI applications using HTML/CSS, rendered via a Webview (powered by Tauri or Electron).
 - **Cross-Platform CLI**: A command-line interface written in Go, providing commands like `vel init`, `vel start`, and `vel debug` for a seamless developer experience.
 - **Performance**: A core written in Rust for fast parsing and execution.
 - **Extensibility**: A package management system similar to npm, using `vel.json` to define dependencies.
@@ -52,100 +49,10 @@ Velvet is ideal for rapid prototyping, small-scale applications, and developers 
 | **CLI Tools**          | A Go-based CLI (`vel`) for project initialization, dependency management, and debugging. |
 | **Package Management** | Dependency management via `vel.json`, similar to `package.json` in npm.         |
 | **Debugger**           | Built-in debugging mode accessible via `vel debug`.                            |
-| **Runtime**            | Rust-based interpreter with a JavaScript interface for GUI rendering.           |
-| **GUI Rendering**      | Webview-based GUI using Tauri (lightweight) or Electron, rendering DSL-generated HTML/CSS. |
-| **Future Web IDE**     | Planned support for a browser-based IDE using React or Svelte.                  |
+| **Runtime**            | Rust-based interpreter with a python        |
 
 ---
 
-## Project Structure
-
-The Velvet project is organized into modular components, each implemented in a language best suited for its purpose.
-
-velvet/
-├── cli/
-│   ├── Cargo.toml
-│   └── src/
-│       └── main.rs
-├── core/
-│   ├── Cargo.toml
-│   └── src/
-│       ├── builder.rs
-│       ├── config.rs
-│       ├── error.rs
-│       ├── ffi.rs
-│       ├── interpreter.rs
-│       ├── logger.rs
-│       ├── module_registry.rs
-│       ├── modules.rs
-│       ├── parser.rs
-│       ├── plugin_system.rs
-│       ├── repl.rs
-│       ├── runtime.rs
-│       ├── stdlib_1.rs
-│       ├── stdlib_2.rs
-│       └── types.rs
-├── examples/
-│   ├── ai_prediction.vel
-│   ├── crypto_ops.vel
-│   ├── http_workflow.vel
-│   ├── jython_gui.vel
-│   ├── modern_gui.vel
-│   ├── parallel_processing.vel
-│   └── wayland_app.vel
-├── gui/
-│   ├── package.json
-│   └── src/
-│       ├── app.js
-│       ├── events.js
-│       ├── gui.js
-│       ├── index.html
-│       └── styles.css
-├── vel_modules/
-│   ├── ai_pytorch.vel
-│   ├── ai_tensorflow.vel
-│   ├── cpp_boost.vel
-│   ├── csharp_json.vel
-│   ├── db_sqlite.vel
-│   ├── gpu_cuda.vel
-│   ├── java_jython.vel
-│   ├── js_axios.vel
-│   ├── net_websocket.vel
-│   ├── perf_crypto.vel
-│   ├── perf_parallel.vel
-│   ├── python_requests.vel
-│   ├── ruby_httparty.vel
-│   ├── rust_flate2.vel
-│   ├── tauri_gui.vel
-│   └── wayland_gui.vel
-├── velvet-jni/
-│   ├── pom.xml
-│   └── src/
-│       └── main/
-│           └── java/
-│               └── com/
-│                   └── velvet/
-│                       ├── AiPytorchAdapter.java
-│                       ├── AiTensorflowAdapter.java
-│                       ├── AsyncAdapter.java
-│                       ├── CppBoostAdapter.java
-│                       ├── CsharpJsonAdapter.java
-│                       ├── DbSqliteAdapter.java
-│                       ├── GpuCudaAdapter.java
-│                       ├── JavaJythonAdapter.java
-│                       ├── JsAxiosAdapter.java
-│                       ├── LibraryManager.java
-│                       ├── ModuleAdapter.java
-│                       ├── NetWebsocketAdapter.java
-│                       ├── PerfCryptoAdapter.java
-│                       ├── PerfParallelAdapter.java
-│                       ├── PythonRequestsAdapter.java
-│                       ├── RubyHttpartyAdapter.java
-│                       ├── RustFlate2Adapter.java
-│                       ├── TauriGuiAdapter.java
-│                       ├── VelvetJNI.java
-│                       └── WaylandGuiAdapter.java
-└── vel.json
 
 ## Installation
 
@@ -261,33 +168,104 @@ This creates a folder with the recommended Velvet project layout.
 ---
 
 
- Command overview
-
-Command	Description
-
-vel init <project>	Initialize a new Velvet project
-vel build <file.vel>	Build a Velvet file/project
-vel run <file.vel>	Run a Velvet file directly
-vel gui	Launch the Velvet GUI
-vel --help	Show available CLI options
-
-
-
----
-
- Example workflow
-
-git clone https://github.com/Velvet-Programing-Laguage/Velvet-Programing-Language.git
-cd Velvet-Programing-Language
-sudo ./install.sh
-
 # Create and run your first program
 echo 'say("Hello from Velvet!")' > test.vel
 vel run test.vel
 
 ### Writing Velvet Code
 
+###### Random Code in Velvet
+
+<<< @ Velvet 1.0 example with detailed comments to help learning
+
+@ Importing modules:
+@  - .> means import standard library or module
+@  - <. means import specific parts from module (like Python's 'from')
+@  - < > means import both ways, full module access
+use .>math        @ import math library for calculations
+use <.utils       @ import utility functions from utils module
+use <io>          @ import full io module
+
+@ Declare a constant value, cannot be changed later
+const PI = 3.1415926535
+
+@ Declare a variable with type String, initialized to "Velvet 1.0"
+val version: String = "Velvet 1.0"
+
+@ Define a function named circle_area that calculates the area of a circle
+@ It takes one argument: radius (type Number)
+fun circle_area(radius: Number) -> 
+    PI * radius * radius   @ formula for circle area: πr²
+
+@ Define a lambda (anonymous function) to double a number
+let double = (x) => x * 2
+
+@ Define a function to filter numbers greater than a threshold
+fun filter_greater_than(nums: List, threshold: Number) -> 
+    nums |> filter(x => x > threshold) 
+    @ Use pipeline operator to apply filter: keep x where x > threshold
+
+@ Define a struct (like class) for User
+type User:
+    name: String     @ User's name
+    age: Number      @ User's age
+    active: Bool     @ Is user active?
+
+@ Create a list of users (instances of User)
+let users = [
+    User(name="Michal", age=21, active=true),    @ active user
+    User(name="Anna", age=30, active=false),     @ inactive user
+    User(name="Tom", age=18, active=true)        @ active user
+]
+
+@ Define the main function - program entry point
+fun main() -> 
+    say "Language version: " + version   @ Print the version string
+
+    let r = 5                           @ Define radius variable
+    let area = circle_area(r)           @ Calculate area using our function
+    say "Circle area with radius " + r + ": " + area
+
+    let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  @ Define a list of numbers
+    let doubled_numbers = numbers |> map(double)    @ Double each number using map and lambda
+    say "Doubled numbers: " + doubled_numbers
+
+    let filtered = filter_greater_than(doubled_numbers, 10)  @ Filter doubled numbers greater than 10
+    say "Numbers > 10: " + filtered
+
+    @ Loop through each user in users list
+    for user in users:
+        if user.active:                      @ Check if user is active
+            say "Active user: " + user.name + ", age: " + user.age
+        else:
+            say "Inactive user: " + user.name
+
+    @ Use match statement to handle different cases for user's name
+    match users[0].name:
+        "Michal" | say "Hello Michal! Nice to see you!"  @ If name is Michal
+        _ | say "Unknown user"                           @ Default case for others
+
+    @ Example of error handling using try-catch
+    try:
+        let x = 10 / 0                  @ This will cause an error (division by zero)
+        say "Division result: " + x
+    catch e:
+        say "An error occurred: " + e   @ Catch and print the error message
+
+@ Call main function to run the program
+main()  >>>
+
 ### CLI Commands
+
+vel restart < The command restarts and clears the isolated environment of all dependencies. >
+vel init <project>	< Initialize a new Velvet project >
+vel build <location to project> < Compile Project >
+vel run <file.vel>	< Run a Velvet file directly >
+vel build .> release deb < Packs all code written in velvet into a deb file. >
+vel ? <	Show every commands >
+vel install <.> cargo install clap 
+< Install libraries for each language in an isolated environment. >
+vel install < Go to the directory with your code, save the vel.json file, run vel install. >
 
 ## Example
 
@@ -295,6 +273,6 @@ vel run test.vel
 
 ### Core Rust
 
-### CLI Rust
+### CLI Go
 
-### 
+### Python Interpreter
