@@ -63,7 +63,7 @@ Velvet is ideal for rapid prototyping, small-scale applications, and developers 
 The Velvet project is organized into modular components, each implemented in a language best suited for its purpose.
 
 
-## Installation
+## 1) Installation From Source
 
 
 Install Repo
@@ -78,8 +78,7 @@ Go to file
 cd Velvet-Programing-Laguage
 ```
 
-
-# FOR LINUX AND MACOS
+### FOR LINUX AND MACOS
 
 
 Add Sudo Permission for script
@@ -95,7 +94,7 @@ Run Install.sh
 ```
 
 
-# FOR WINDOWS
+### FOR WINDOWS
 
 Add Sudo Permission For Script
 
@@ -108,3 +107,15 @@ Run Install.ps1
 ```bash
 .\install.ps1
 ```
+
+## 2) Fast Installation
+
+#### For Linux
+curl -OL https://raw.githubusercontent.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage/main/install.sh
+chmod +x install.sh
+./install.sh
+
+
+#### For Windows
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+irm https://raw.githubusercontent.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage/main/install.ps1 | iex
