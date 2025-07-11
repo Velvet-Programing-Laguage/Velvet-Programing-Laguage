@@ -1,0 +1,3 @@
+fn log_info(msg) {
+    return logging_info(msg)
+}
