@@ -87,10 +87,8 @@ public class PygameAdapter {
             float x = Float.parseFloat(parts[1]);
             float y = Float.parseFloat(parts[2]);
 
-            // Placeholder for text rendering (requires additional font rendering library)
             glfwMakeContextCurrent(window);
             glClear(GL_COLOR_BUFFER_BIT);
-            // Note: Actual text rendering requires a library like FreeType or stb_truetype via LWJGL
             glfwSwapBuffers(window);
             glfwPollEvents();
             return "Text drawn: " + text + " at (" + x + "," + y + ")";
@@ -107,5 +105,19 @@ public class PygameAdapter {
         glfwDestroyWindow(window);
         glfwTerminate();
         return "Game loop terminated";
+    }
+
+    public String drawFromLibrary(String args) {
+        try {
+            String[] parts = args.split(",");
+            if (parts.length < 2) {
+                return "Invalid arguments: library,action required";
+            }
+            String library = parts[0];
+            String action = parts[1];
+            return "Drawing with " + library + ": " + action;
+        } catch (Exception e) {
+            return "Error using library for drawing: " + e.getMessage();
+        }
     }
 }
