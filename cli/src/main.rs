@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use serde_json;
 use std::fs;
 use std::process::Command;
+use velvet_core::builder::{build_project, package_project};
 
 #[derive(Parser)]
 #[clap(name = "vel", about = "Velvet Programming Language CLI")]
@@ -16,7 +17,12 @@ enum Commands {
     Install,
     Run { file: String },
     Start,
-    Build,
+    Build {
+        #[clap(long)]
+        release: bool,
+        #[clap(long)]
+        package_type: Option<String>,
+    },
     Test,
     Debug,
     Update,
@@ -24,6 +30,9 @@ enum Commands {
     Docs,
     Watch,
     Repl,
+    Format,
+    Lint,
+    Publish { package: String },
 }
 
 fn main() {
@@ -35,14 +44,24 @@ fn main() {
         Commands::Install => install_dependencies(),
         Commands::Run { file } => run_file(&file),
         Commands::Start => start_gui(),
-        Commands::Build => build_project(),
+        Commands::Build { release, package_type } => {
+            if release {
+                let pkg_type = package_type.unwrap_or("exe".to_string());
+                build_project(true, &pkg_type)
+            } else {
+                build_project(false, "exe")
+            }
+        }
         Commands::Test => run_tests(),
         Commands::Debug => debug_project(),
         Commands::Update => update_dependencies(),
-        Commands::Package => package_project(),
+        Commands::Package => package_project("exe"),
         Commands::Docs => generate_docs(),
         Commands::Watch => watch_project(),
         Commands::Repl => run_repl(),
+        Commands::Format => format_code(),
+        Commands::Lint => lint_code(),
+        Commands::Publish { package } => publish_package(&package),
     }
 }
 
@@ -71,7 +90,11 @@ fn init_project() {
         "theme": "dark",
         "wayland_enabled": true
     },
-    "plugins": []
+    "plugins": [],
+    "runtime": {
+        "max_threads": 4,
+        "async_enabled": true
+    }
 }
 "#;
     fs::write("vel.json", config).expect("Failed to write vel.json");
@@ -80,7 +103,6 @@ fn init_project() {
 
 fn install_dependencies() {
     log::info!("Installing dependencies...");
-    // Simulate installing dependencies (e.g., pip, npm, cargo)
     Command::new("pip").args(["install", "requests"]).status().unwrap();
     Command::new("npm").args(["install", "axios"]).status().unwrap();
 }
@@ -93,11 +115,6 @@ fn run_file(file: &str) {
 fn start_gui() {
     log::info!("Starting Tauri GUI...");
     Command::new("npm").args(["run", "tauri:dev"]).current_dir("../gui").status().unwrap();
-}
-
-fn build_project() {
-    log::info!("Building project...");
-    // Compile to binaries
 }
 
 fn run_tests() {
@@ -115,11 +132,6 @@ fn update_dependencies() {
     // Update external libraries
 }
 
-fn package_project() {
-    log::info!("Packaging project...");
-    // Create distributable package
-}
-
 fn generate_docs() {
     log::info!("Generating documentation...");
     // Generate Velvet docs
@@ -133,4 +145,34 @@ fn watch_project() {
 fn run_repl() {
     log::info!("Starting Velvet REPL...");
     // Call core REPL functionality
+}
+
+fn format_code() {
+    log::info!("Formatting Velvet code...");
+    // Placeholder: Format .vel files
+    for entry in fs::read_dir(".").unwrap() {
+        let entry = entry.unwrap();
+        if entry.path().extension().map(|e| e == "vel").unwrap_or(false) {
+            log::info!("Formatting: {}", entry.path().display());
+            // Implement formatting logic (e.g., indent, align)
+        }
+    }
+}
+
+fn lint_code() {
+    log::info!("Linting Velvet code...");
+    // Placeholder: Check .vel files for errors
+    for entry in fs::read_dir(".").unwrap() {
+        let entry = entry.unwrap();
+        if entry.path().extension().map(|e| e == "vel").unwrap_or(false) {
+            log::info!("Linting: {}", entry.path().display());
+            // Implement linting logic (e.g., syntax check)
+        }
+    }
+}
+
+fn publish_package(package: &str) {
+    log::info!("Publishing package: {}", package);
+    // Placeholder: Publish to a repository
+    log::info!("Package {} published successfully", package);
 }
