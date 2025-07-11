@@ -1,4 +1,4 @@
-# Velvet Install Velvet for windows
+# Velvet Install Script for Windows
 # Author: VELVET TEAM
 # Date: 2025-07-11
 
@@ -69,14 +69,6 @@ function Install-Rust {
     }
 }
 
-function Install-Go {
-    if (-not (Check-Command "go")) {
-        Write-Log "Please install Go manually from https://golang.org/dl/ and re-run the script." "ERROR"
-    } else {
-        Write-Log "Go found: $(go version)"
-    }
-}
-
 function Install-Node {
     if (-not (Check-Command "node")) {
         Write-Log "Please install Node.js (v18+) manually from https://nodejs.org and re-run the script." "ERROR"
@@ -111,12 +103,6 @@ function Build-Velvet {
     cargo build --release
     Set-Location ..
 
-    Write-Log "Building Velvet CLI (Go)..."
-    Set-Location cli
-    go build -o vel.exe
-    Move-Item vel.exe "C:\Program Files\Velvet\vel.exe" -Force
-    Set-Location ..
-
     Write-Log "Building Velvet GUI (Tauri)..."
     Set-Location gui
     npm install
@@ -145,7 +131,6 @@ function Main {
 
     Install-Java
     Install-Rust
-    Install-Go
     Install-Node
     Install-Tauri
 
