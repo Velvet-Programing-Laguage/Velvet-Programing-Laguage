@@ -1,3 +1,4 @@
+t" | NEWLINE | COMMENT }
 program = { statement* }
 
 statement = {
@@ -9,10 +10,11 @@ statement = {
     | while_stmt
     | break_stmt
     | continue_stmt
-    | fn
+    | fun
+    | lambda_stmt
     | import
     | try_stmt
-    | struct
+    | type_def
     | match_stmt
     | return_stmt
     | expr_stmt
@@ -20,51 +22,90 @@ statement = {
 
 say = { "say" ~ expr }
 
-let = { "let" ~ IDENT ~ ("=" ~ expr)? }
+let = { "let" ~ IDENT ~ (":" ~ type)? ~ ("=" ~ expr)? }
 
-const = { "const" ~ IDENT ~ "=" ~ expr }
+const = { "const" ~ IDENT ~ ("=" ~ expr)? }
 
 if_stmt = {
-    "if" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~
-    ("else" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT)?
+    "if" ~ expr ~ ":" ~ statement_block ~
+    ("else" ~ ":" ~ statement_block)?
 }
 
 for_stmt = {
-    "for" ~ IDENT ~ "in" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+    "for" ~ IDENT ~ "in" ~ expr ~ ":" ~ statement_block
 }
 
 while_stmt = {
-    "while" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+    "while" ~ expr ~ ":" ~ statement_block
 }
 
 break_stmt = { "break" }
 
 continue_stmt = { "continue" }
 
-fn = {
-    "fn" ~ IDENT ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+fun = {
+    "fun" ~ IDENT ~ "(" ~ (fn_param ~ ("," ~ fn_param)*)? ~ ")" ~ (":" ~ type)? ~ "->" ~ statement_block
 }
 
-import = { "import" ~ STRING }
+fn_param = { IDENT ~ (":" ~ type)? }
+
+lambda_stmt = {
+    "let" ~ IDENT ~ "=" ~ "(" ~ (IDENT ~ ("," ~ IDENT)*)? ~ ")" ~ "=>" ~ expr
+}
+
+import = {
+    "use" ~ IDENT
+}
 
 try_stmt = {
-    "try" ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT ~
-    "catch" ~ IDENT ~ ":" ~ NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+    "try" ~ ":" ~ statement_block ~
+    "catch" ~ IDENT ~ ":" ~ statement_block
 }
 
-struct = {
-    "struct" ~ IDENT ~ ":" ~ NEWLINE ~ INDENT ~ (IDENT ~ ":" ~ type)+ ~ DEDENT
+type_def = {
+    "type" ~ IDENT ~ ":" ~ struct_block
 }
 
 match_stmt = {
-    "match" ~ expr ~ ":" ~ NEWLINE ~ INDENT ~ (pattern ~ "=>" ~ statement+)+ ~ DEDENT
+    "match" ~ expr ~ ":" ~ match_block
 }
 
-return_stmt = { "return" ~ expr }
+return_stmt = { "->" ~ expr }
 
 expr_stmt = { expr }
 
-expr = {
+expr = { pipe }
+
+pipe = {
+    logic ~ ("|>" ~ logic)*
+}
+
+logic = {
+    equality ~ (("and" | "or") ~ equality)*
+}
+
+equality = {
+    comparison ~ (("==" | "!=") ~ comparison)*
+}
+
+comparison = {
+    term ~ ((">" | ">=" | "<" | "<=") ~ term)*
+}
+
+term = {
+    factor ~ (("+" | "-") ~ factor)*
+}
+
+factor = {
+    unary ~ (("*" | "/" | "%") ~ unary)*
+}
+
+unary = {
+      ("-" | "!") ~ unary
+    | primary
+}
+
+primary = {
       STRING
     | NUMBER
     | IDENT
@@ -95,6 +136,18 @@ type = {
     | IDENT
 }
 
+statement_block = {
+    NEWLINE ~ INDENT ~ statement+ ~ DEDENT
+}
+
+struct_block = {
+    NEWLINE ~ INDENT ~ (IDENT ~ (":" ~ type)?)+ ~ DEDENT
+}
+
+match_block = {
+    NEWLINE ~ INDENT ~ (pattern ~ "|" ~ statement+)+ ~ DEDENT
+}
+
 STRING = { "\"" ~ (!"\"")* ~ "\"" }
 
 NUMBER = { ASCII_DIGIT+ ("." ~ ASCII_DIGIT+)? }
@@ -107,6 +160,6 @@ INDENT = { "    " }
 
 DEDENT = { "" }
 
-COMMENT = _{ "#" ~ (!NEWLINE)* ~ NEWLINE }
+COMMENT = _{ "@" ~ (!NEWLINE)* ~ NEWLINE }
 
 WHITESPACE = _{ " " | "\t" | NEWLINE | COMMENT }
