@@ -8,6 +8,12 @@ import (
 type Config struct {
     Debug        bool              `json:"debug"`
     Dependencies map[string]string `json:"dependencies"`
+    Gui          GuiConfig         `json:"gui"`
+}
+
+type GuiConfig struct {
+    Theme         string `json:"theme"`
+    WaylandEnabled bool   `json:"wayland_enabled"`
 }
 
 func loadConfig() Config {
