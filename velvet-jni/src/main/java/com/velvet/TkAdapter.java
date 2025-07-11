@@ -55,4 +55,46 @@ public class TkAdapter {
             return "Error adding menu: " + e.getMessage();
         }
     }
+
+    public String addCheckbox(String args) {
+        try {
+            String[] parts = args.split(",");
+            if (parts.length != 3) {
+                return "Invalid arguments: text,x,y required";
+            }
+            String text = parts[0];
+            int x = Integer.parseInt(parts[1]);
+            int y = Integer.parseInt(parts[2]);
+
+            JCheckBox checkbox = new JCheckBox(text);
+            checkbox.setBounds(x, y, 200, 30);
+            frame.add(checkbox);
+            frame.repaint();
+            return "Checkbox added: " + text;
+        } catch (Exception e) {
+            return "Error adding checkbox: " + e.getMessage();
+        }
+    }
+
+    public String addRadioButton(String args) {
+        try {
+            String[] parts = args.split(",");
+            if (parts.length != 4) {
+                return "Invalid arguments: text,x,y,group required";
+            }
+            String text = parts[0];
+            int x = Integer.parseInt(parts[1]);
+            int y = Integer.parseInt(parts[2]);
+            String group = parts[3];
+
+            JRadioButton radio = new JRadioButton(text);
+            radio.setBounds(x, y, 200, 30);
+            radio.setActionCommand(group);
+            frame.add(radio);
+            frame.repaint();
+            return "Radio button added: " + text;
+        } catch (Exception e) {
+            return "Error adding radio button: " + e.getMessage();
+        }
+    }
 }
