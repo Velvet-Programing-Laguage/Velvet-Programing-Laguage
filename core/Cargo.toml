@@ -1,6 +1,6 @@
 [package]
 name = "velvet-core"
-version = "0.5.2"
+version = "0.5.3"
 edition = "2021"
 
 [dependencies]
@@ -33,11 +33,11 @@ clap = "4.4"
 tch = "0.10"
 bitcoin = "0.29"
 pdf-writer = "0.10"
-flate2 = "1.0"           # Added for compression
-jsonwebtoken = "8.3"      # Added for JWT
-serde_cbor = "0.11"       # Added for CBOR serialization
-hyper = "0.14"            # Added for advanced HTTP
-rbatis = "4.0"            # Added for ORM
+flate2 = "1.0"           # For rust_flate2
+jsonwebtoken = "8.3"      # For JWT support
+serde_cbor = "0.11"       # For CBOR serialization
+hyper = { version = "0.14", features = ["client", "http1"] } # For advanced HTTP
+rbatis = "4.0"            # For ORM
 
 [lib]
 name = "velvet_core"
