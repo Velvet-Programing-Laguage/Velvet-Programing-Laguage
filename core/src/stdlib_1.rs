@@ -1,6 +1,6 @@
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
-use reqwest::blocking::get;
+use reqwest::blocking::{get, Client};
 use sha2::{Sha256, Digest};
 use rand::Rng;
 use serde_json;
@@ -10,8 +10,9 @@ use geo::Point;
 use qrcode::QrCode;
 use image::{ImageBuffer, Rgb};
 use rodio::{Decoder, OutputStream, Source};
-use flate2::{write::ZlibEncoder, Compression};
+use flate2::{write::ZlibEncoder, read::ZlibDecoder, Compression};
 use std::process::Command;
+use std::io::Write;
 use crate::interpreter::{Expr, RuntimeValue, Interpreter};
 
 pub fn register_stdlib_1(env: &mut std::collections::HashMap<String, RuntimeValue>) {
@@ -22,7 +23,7 @@ pub fn register_stdlib_1(env: &mut std::collections::HashMap<String, RuntimeValu
         "yaml_parse", "yaml_stringify", "dotenv_load", "dateutil_format",
         "geo_distance", "barcode_generate", "image_resize", "qr_generate",
         "camera_capture", "sound_play", "python_requests", "cpp_boost",
-        "compress_zlib",
+        "rust_flate2",
     ];
     for func in functions {
         env.insert(
@@ -295,9 +296,13 @@ pub fn stdlib_1_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
         }
         "python_requests" => {
             if let (Some(RuntimeValue::String(url)), Some(RuntimeValue::String(method))) = (evaluated_args.get(0), evaluated_args.get(1)) {
+                let data = evaluated_args.get(2).map(|v| match v {
+                    RuntimeValue::String(s) => s.clone(),
+                    _ => "{}".to_string(),
+                }).unwrap_or("{}".to_string());
                 let output = Command::new("python3")
                     .arg("-c")
-                    .arg(format!("import requests; print(requests.{}( '{}').text)", method.to_lowercase(), url))
+                    .arg(format!("import requests; print(requests.{}( '{}', json={}).text)", method.to_lowercase(), url, data))
                     .output()
                     .map_err(|e| format!("Error: {}", e))?;
                 Some(RuntimeValue::String(String::from_utf8_lossy(&output.stdout).to_string()))
@@ -306,23 +311,35 @@ pub fn stdlib_1_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
             }
         }
         "cpp_boost" => {
-            if let Some(RuntimeValue::String(input)) = evaluated_args.get(0) {
+            if let (Some(RuntimeValue::String(action)), Some(RuntimeValue::String(input))) = (evaluated_args.get(0), evaluated_args.get(1)) {
                 // Placeholder for Boost C++ interop (requires compiled C++ shared lib)
-                Some(RuntimeValue::String(format!("C++ Boost processed: {}", input)))
+                Some(RuntimeValue::String(format!("C++ Boost {} processed: {}", action, input)))
             } else {
-                Some(RuntimeValue::String("Invalid input".to_string()))
+                Some(RuntimeValue::String("Invalid action or input".to_string()))
             }
         }
-        "compress_zlib" => {
-            if let Some(RuntimeValue::String(data)) = evaluated_args.get(0) {
-                let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
-                std::io::Write::write_all(&mut encoder, data.as_bytes()).unwrap();
-                let compressed = encoder.finish().unwrap();
-                Some(RuntimeValue::String(base64::encode(compressed)))
+        "rust_flate2" => {
+            if let (Some(RuntimeValue::String(action)), Some(RuntimeValue::String(data))) = (evaluated_args.get(0), evaluated_args.get(1)) {
+                match action.as_str() {
+                    "compress" => {
+                        let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+                        encoder.write_all(data.as_bytes()).unwrap();
+                        let compressed = encoder.finish().unwrap();
+                        Some(RuntimeValue::String(base64::encode(compressed)))
+                    }
+                    "decompress" => {
+                        let decoded = base64::decode(data).unwrap();
+                        let mut decoder = ZlibDecoder::new(&decoded[..]);
+                        let mut decompressed = Vec::new();
+                        decoder.read_to_end(&mut decompressed).unwrap();
+                        Some(RuntimeValue::String(String::from_utf8_lossy(&decompressed).to_string()))
+                    }
+                    _ => Some(RuntimeValue::String("Invalid action".to_string())),
+                }
             } else {
-                Some(RuntimeValue::String("Invalid data".to_string()))
+                Some(RuntimeValue::String("Invalid action or data".to_string()))
             }
         }
         _ => None,
     }
-                                   }
+}
