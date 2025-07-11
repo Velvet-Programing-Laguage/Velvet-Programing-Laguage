@@ -1,0 +1,3 @@
+fn db_redis_connect(url) {
+    return db_connect("redis", url)
+}
