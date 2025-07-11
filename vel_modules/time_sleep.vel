@@ -1,0 +1,3 @@
+fn time_sleep(seconds) {
+    return time_delay(seconds)
+}
