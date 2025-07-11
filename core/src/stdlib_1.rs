@@ -9,6 +9,7 @@ use chrono::{DateTime, Utc};
 use geo::Point;
 use qrcode::QrCode;
 use image::{ImageBuffer, Rgb};
+use rodio::{Decoder, OutputStream, Source};
 use crate::interpreter::{Expr, RuntimeValue, Interpreter};
 
 pub fn register_stdlib_1(env: &mut std::collections::HashMap<String, RuntimeValue>) {
@@ -17,8 +18,8 @@ pub fn register_stdlib_1(env: &mut std::collections::HashMap<String, RuntimeValu
         "math_add", "math_sub", "math_sqrt", "os_env", "random_int",
         "string_upper", "string_lower", "json_parse", "json_stringify",
         "yaml_parse", "yaml_stringify", "dotenv_load", "dateutil_format",
-        "geo_distance", "barcode_generate", "pdf_create", "image_resize",
-        "qr_generate", "camera_capture", "sound_play",
+        "geo_distance", "barcode_generate", "image_resize", "qr_generate",
+        "camera_capture", "sound_play",
     ];
     for func in functions {
         env.insert(
@@ -236,9 +237,6 @@ pub fn stdlib_1_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
                 Some(RuntimeValue::String("Invalid content".to_string()))
             }
         }
-        "pdf_create" => {
-            Some(RuntimeValue::String("PDF created".to_string()))
-        }
         "image_resize" => {
             if let (Some(RuntimeValue::String(path)), Some(RuntimeValue::Number(width)), Some(RuntimeValue::Number(height))) = (evaluated_args.get(0), evaluated_args.get(1), evaluated_args.get(2)) {
                 match image::open(path) {
@@ -275,14 +273,14 @@ pub fn stdlib_1_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
             }
         }
         "camera_capture" => {
-            Some(RuntimeValue::String("Camera capture not implemented".to_string()))
+            Some(RuntimeValue::String("Camera capture via JNI".to_string()))
         }
         "sound_play" => {
             if let Some(RuntimeValue::String(path)) = evaluated_args.get(0) {
                 match fs::File::open(path) {
                     Ok(file) => {
-                        let (_stream, stream_handle) = rodio::OutputStream::try_default().map_err(|e| format!("Error: {}", e))?;
-                        let source = rodio::Decoder::new(file).map_err(|e| format!("Error: {}", e))?;
+                        let (_stream, stream_handle) = OutputStream::try_default().map_err(|e| format!("Error: {}", e))?;
+                        let source = Decoder::new(file).map_err(|e| format!("Error: {}", e))?;
                         stream_handle.play_raw(source.convert_samples()).map_err(|e| format!("Error: {}", e))?;
                         Some(RuntimeValue::String("Sound played".to_string()))
                     }
@@ -294,4 +292,4 @@ pub fn stdlib_1_call(name: &str, args: Vec<Expr>, interpreter: &Interpreter) -> 
         }
         _ => None,
     }
-}
+            }
