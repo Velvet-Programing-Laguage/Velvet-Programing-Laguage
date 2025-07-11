@@ -1,0 +1,11 @@
+import rayon
+
+# Parallel map over a collection
+fn rayon_map(collection: list, func: string) {
+    return rayon.map(collection, func)
+}
+
+# Parallel reduce operation
+fn rayon_reduce(collection: list, func: string, initial: int) {
+    return rayon.reduce(collection, func, initial)
+}
