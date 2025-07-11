@@ -1,0 +1,3 @@
+fn email_validate(email) {
+    return re_match(email, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+}
