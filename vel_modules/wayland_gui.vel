@@ -1,0 +1,16 @@
+import wayland
+
+# Initialize Wayland compositor
+fn wayland_init(display: string) {
+    return wayland.init(display)
+}
+
+# Create a Wayland-native dialog
+fn wayland_add_dialog(id: string, title: string, message: string) {
+    return wayland.add_dialog(id, title, message)
+}
+
+# Set Wayland window properties
+fn wayland_set_window(id: string, opacity: float, fullscreen: bool) {
+    return wayland.set_window(id, opacity, fullscreen)
+}
