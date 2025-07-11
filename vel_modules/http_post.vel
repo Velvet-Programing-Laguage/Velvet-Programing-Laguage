@@ -1,0 +1,3 @@
+fn http_post(url, data) {
+    return http_request("POST", url, data)
+}
