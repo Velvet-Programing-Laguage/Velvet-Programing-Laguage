@@ -208,3 +208,11 @@ chmod +x install.sh
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 irm https://raw.githubusercontent.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage/main/install.ps1 | iex
 ```
+
+## Usage
+
+### Writing Velvet Code
+
+### CLI Commands
+
+## Example
