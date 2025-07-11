@@ -20,6 +20,16 @@ pub extern "system" fn Java_com_velvet_VelvetJNI_runTk(_env: JNIEnv, _class: JCl
     _env.new_string("Tk initialized via JNI").unwrap().into_inner()
 }
 
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_captureCamera(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("Camera captured via JNI").unwrap().into_inner()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_velvet_VelvetJNI_createPDF(_env: JNIEnv, _class: JClass, _args: JString) -> jstring {
+    _env.new_string("PDF created via JNI").unwrap().into_inner()
+}
+
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();
