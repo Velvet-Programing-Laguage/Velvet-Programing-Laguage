@@ -1,0 +1,3 @@
+fn regex_replace(text, pattern, replacement) {
+    return re_replace(text, pattern, replacement)
+}
