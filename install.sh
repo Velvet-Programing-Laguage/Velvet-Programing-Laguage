@@ -1,227 +1,129 @@
 #!/bin/bash
 
-set -euo pipefail
+# install.sh
+# Script to install Velvet programming language and its dependencies
 
-LOGFILE="/tmp/velvet_install.log"
-VELVET_REPO="https://github.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage.git"
-VELVET_DIR="Velvet-Programing-Laguage"
+set -e
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
-ascii_banner() {
-cat << "EOF"
-  ___      ___ _______   ___       ___      ___ _______  _________   
-|\  \    /  /|\  ___ \ |\  \     |\  \    /  /|\  ___ \|\___   ___\ 
-\ \  \  /  / | \   __/|\ \  \    \ \  \  /  / | \   __/\|___ \  \_| 
- \ \  \/  / / \ \  \_|/_\ \  \    \ \  \/  / / \ \  \_|/__  \ \  \  
-  \ \    / /   \ \  \_|\ \ \  \____\ \    / /   \ \  \_|\ \  \ \  \ 
-   \ \__/ /     \ \_______\ \_______\ \__/ /     \ \_______\  \ \__\
-    \|__|/       \|_______|\|_______|\|__|/       \|_______|   \|__|
-EOF
-}
-
-spinner() {
-    local pid=$1
-    local delay=0.08
-    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-    tput civis
-    while kill -0 "$pid" 2>/dev/null; do
-        for ((i=0; i<${#spinstr}; i++)); do
-            printf " [%b]  " "${spinstr:i:1}"
-            sleep $delay
-            printf "\b\b\b\b\b\b"
-        done
-    done
-    tput cnorm
-    printf "       \b\b\b\b\b\b"
-}
-
-log() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-    echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') $1" >> "$LOGFILE"
-}
-
-warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-    echo "[WARN] $(date '+%Y-%m-%d %H:%M:%S') $1" >> "$LOGFILE"
-}
-
-error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-    echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') $1" >> "$LOGFILE"
-    exit 1
-}
-
-ensure_root() {
-    if [ "$EUID" -ne 0 ]; then
-        echo -e "${YELLOW}Script requires root privileges. Restarting with sudo...${NC}"
-        chmod a+x "$0"
-        exec sudo bash "$0" "$@"
-    fi
-}
-
-detect_distro() {
-    OS=$(uname -s)
-    if [ "$OS" = "Linux" ]; then
+# Function to detect the OS and distribution
+detect_os() {
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         if [ -f /etc/os-release ]; then
             . /etc/os-release
             DISTRO=$ID
+            VERSION=$VERSION_ID
         else
-            DISTRO="unknown"
+            echo "Cannot detect Linux distribution!"
+            exit 1
         fi
-    elif [ "$OS" = "Darwin" ]; then
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
         DISTRO="macos"
     else
-        error "Unsupported OS: $OS"
+        echo "Unsupported OS: $OSTYPE"
+        exit 1
     fi
-    log "Detected OS: $OS, Distribution: $DISTRO"
+    echo "Detected OS: $DISTRO"
 }
 
-install_packages() {
-    local pkgs="$1"
-    case "$PKG_MANAGER" in
-        apt)
-            log "Updating apt and installing packages: $pkgs"
-            apt update -y &>> "$LOGFILE"
-            apt install -y $pkgs &>> "$LOGFILE"
+# Function to install system dependencies
+install_system_deps() {
+    case $DISTRO in
+        "ubuntu"|"debian")
+            sudo apt-get update
+            sudo apt-get install -y curl git build-essential python3 python3-venv python3-pip ruby rubygems rustc cargo golang openjdk-11-jdk nodejs npm
+            # Crystal (not in default repos, use third-party)
+            curl -fsSL https://crystal-lang.org/install.sh | sudo bash
+            # Elixir
+            sudo apt-get install -y elixir
+            # Kotlin
+            sudo snap install --classic kotlin
             ;;
-        dnf)
-            log "Updating dnf and installing packages: $pkgs"
-            dnf check-update -y &>> "$LOGFILE"
-            dnf install -y $pkgs &>> "$LOGFILE"
+        "fedora")
+            sudo dnf install -y curl git gcc python3 python3-pip ruby rubygems rust cargo golang java-11-openjdk nodejs npm elixir
+            # Crystal
+            curl -fsSL https://crystal-lang.org/install.sh | sudo bash
+            # Kotlin
+            sudo dnf install -y kotlin
             ;;
-        pacman)
-            log "Updating pacman and installing packages: $pkgs"
-            pacman -Sy --noconfirm $pkgs &>> "$LOGFILE"
+        "arch"|"manjaro")
+            sudo pacman -Syu --noconfirm curl git base-devel python python-pip ruby rust go jdk11-openjdk nodejs npm elixir
+            # Crystal
+            sudo pacman -S --noconfirm crystal
+            # Kotlin
+            sudo pacman -S --noconfirm kotlin
             ;;
-        zypper)
-            log "Installing packages with zypper: $pkgs"
-            zypper refresh &>> "$LOGFILE"
-            zypper install -y $pkgs &>> "$LOGFILE"
-            ;;
-        brew)
-            log "Installing packages with brew: $pkgs"
-            brew install $pkgs &>> "$LOGFILE"
+        "macos")
+            brew update
+            brew install curl git python ruby rust go openjdk@11 node elixir
+            # Crystal
+            brew install crystal
+            # Kotlin
+            brew install kotlin
             ;;
         *)
-            warn "Unknown package manager, manual installation may be required: $pkgs"
+            echo "Unsupported distribution: $DISTRO"
+            exit 1
             ;;
     esac
 }
 
-install_rust() {
-    if ! command -v rustc &>/dev/null; then
-        log "Installing Rust..."
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y &>> "$LOGFILE" &
-        spinner $!
-        source "$HOME/.cargo/env"
-        log "Rust installed."
+# Function to set permissions
+set_permissions() {
+    chmod +x "$0"
+    echo "Set executable permissions for install.sh"
+}
+
+# Function to compile and install Velvet
+install_velvet() {
+    # Clone or assume the Velvet project is in the current directory
+    if [ ! -d "velvet" ]; then
+        git clone https://github.com/andyh/velvet.git
+        cd velvet
     else
-        log "Rust found: $(rustc --version)"
-    fi
-}
-
-install_node() {
-    if ! command -v node &>/dev/null; then
-        log "Installing Node.js..."
-        case "$PKG_MANAGER" in
-            apt)
-                curl -fsSL https://deb.nodesource.com/setup_18.x | bash - &>> "$LOGFILE"
-                install_packages "nodejs npm"
-                ;;
-            dnf|pacman|zypper|brew)
-                install_packages "nodejs npm"
-                ;;
-            *)
-                warn "Manual Node.js installation required."
-                ;;
-        esac
-        log "Node.js installed."
-    else
-        log "Node.js found: $(node --version)"
-    fi
-}
-
-install_tauri() {
-    if ! command -v tauri &>/dev/null; then
-        log "Installing Tauri CLI..."
-        npm install -g @tauri-apps/cli &>> "$LOGFILE" &
-        spinner $!
-        log "Tauri CLI installed."
-    else
-        log "Tauri CLI found: $(tauri --version)"
-    fi
-}
-
-build_velvet() {
-    cd "$VELVET_DIR" || error "Failed to cd into $VELVET_DIR"
-
-    log "Building Velvet core (Rust)..."
-    cd core
-    cargo build --release &>> "$LOGFILE" &
-    spinner $!
-    cd ..
-
-    log "Building Velvet CLI (Rust)..."
-    cd cli
-    cargo build --release &>> "$LOGFILE" &
-    spinner $!
-    cd ..
-
-    log "Building Velvet GUI (Tauri)..."
-    cd gui
-    npm install &>> "$LOGFILE" &
-    spinner $!
-    npm run build &>> "$LOGFILE" &
-    spinner $!
-    cd ..
-
-    log "Velvet build complete."
-}
-
-main() {
-    ensure_root "$@"
-    > "$LOGFILE"
-
-    ascii_banner
-
-    log "Starting installation of Velvet Programming Language"
-
-    if [ -d "$VELVET_DIR" ]; then
-        warn "Directory $VELVET_DIR exists, removing..."
-        rm -rf "$VELVET_DIR"
+        cd velvet
     fi
 
-    log "Cloning Velvet repository..."
-    git clone "$VELVET_REPO" &>> "$LOGFILE" &
-    spinner $!
+    # Compile Rust core
+    echo "Compiling Velvet core (Rust)..."
+    cargo build --release
+    sudo cp target/release/velvet /usr/bin/velvet_core
 
-    detect_distro
+    # Compile Go CLI
+    echo "Compiling Velvet CLI (Go)..."
+    go build -o vel src/cli/main.go
+    sudo cp vel /usr/bin/vel
 
-    case "$DISTRO" in
-        ubuntu|debian) PKG_MANAGER="apt" ;;
-        fedora) PKG_MANAGER="dnf" ;;
-        arch|manjaro) PKG_MANAGER="pacman" ;;
-        opensuse*|suse) PKG_MANAGER="zypper" ;;
-        macos) PKG_MANAGER="brew" ;;
-        *)
-            PKG_MANAGER="none"
-            warn "Unknown distro, automatic package installation skipped"
-            ;;
-    esac
+    # Install Python dependencies
+    echo "Installing Python dependencies..."
+    pip3 install -r requirements.txt
 
-    install_rust
-    install_node
-    install_tauri
+    # Create .velvet-library directory
+    sudo mkdir -p /usr/lib/.velvet-library
+    sudo chmod 755 /usr/lib/.velvet-library
+    echo "Created /usr/lib/.velvet-library"
 
-    build_velvet
-
-    log "Velvet Programming Language installed successfully!"
-    echo -e "${GREEN}Installation complete!${NC}"
+    # Copy Python hooks and configuration
+    sudo mkdir -p /usr/lib/velvet/hooks
+    sudo cp -r src/hooks/* /usr/lib/velvet/hooks/
+    sudo cp src/config/vel.config /usr/lib/velvet/
+    sudo chmod -R 755 /usr/lib/velvet
 }
 
-main "$@"
+# Main execution
+echo "Starting Velvet installation..."
+
+# Set permissions
+set_permissions
+
+# Detect OS
+detect_os
+
+# Install system dependencies
+install_system_deps
+
+# Install Velvet
+install_velvet
+
+echo "Velvet installed successfully!"
+echo "You can now use 'vel' command to manage Velvet projects."
+echo "Try 'vel --help' for available commands."
