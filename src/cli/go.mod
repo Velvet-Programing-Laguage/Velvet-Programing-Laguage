@@ -1,3 +1,3 @@
-module github.com/andyh/velvet
+module 
 
 go 1.21
