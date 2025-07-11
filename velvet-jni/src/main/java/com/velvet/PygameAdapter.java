@@ -3,6 +3,10 @@ package com.velvet;
 import org.lwjgl.opengl.GL;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.glfw.GLFW.*;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 public class PygameAdapter {
     private long window;
@@ -115,6 +119,14 @@ public class PygameAdapter {
             }
             String library = parts[0];
             String action = parts[1];
+            if (library.equals("js_axios") && action.startsWith("get")) {
+                String url = parts[2];
+                try (CloseableHttpClient client = HttpClients.createDefault()) {
+                    HttpGet request = new HttpGet(url);
+                    String response = EntityUtils.toString(client.execute(request).getEntity());
+                    return "Axios GET result: " + response;
+                }
+            }
             return "Drawing with " + library + ": " + action;
         } catch (Exception e) {
             return "Error using library for drawing: " + e.getMessage();
