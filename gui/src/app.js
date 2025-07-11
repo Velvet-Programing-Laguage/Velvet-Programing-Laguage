@@ -13,8 +13,9 @@ async function initializeApp() {
 
 async function loadModules() {
     const modules = [
-        'python_requests', 'cpp_boost', 'csharp_json',
-        'ruby_httparty', 'js_axios', 'rust_flate2', 'java_jython'
+        'python_requests', 'cpp_boost', 'csharp_json', 'ruby_httparty',
+        'js_axios', 'rust_flate2', 'java_jython', 'tauri_gui', 'wayland_gui',
+        'ai_tensorflow', 'ai_pytorch', 'perf_parallel', 'perf_crypto'
     ];
     for (const mod of modules) {
         const result = await invoke(`velvet_${mod}`, { args: 'init' });
