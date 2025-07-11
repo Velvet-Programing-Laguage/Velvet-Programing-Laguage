@@ -62,8 +62,94 @@ Velvet is ideal for rapid prototyping, small-scale applications, and developers 
 
 The Velvet project is organized into modular components, each implemented in a language best suited for its purpose.
 
+velvet/
+├── cli/
+│   ├── Cargo.toml
+│   └── src/
+│       └── main.rs
+├── core/
+│   ├── Cargo.toml
+│   └── src/
+│       ├── builder.rs
+│       ├── config.rs
+│       ├── error.rs
+│       ├── ffi.rs
+│       ├── interpreter.rs
+│       ├── logger.rs
+│       ├── module_registry.rs
+│       ├── modules.rs
+│       ├── parser.rs
+│       ├── plugin_system.rs
+│       ├── repl.rs
+│       ├── runtime.rs
+│       ├── stdlib_1.rs
+│       ├── stdlib_2.rs
+│       └── types.rs
+├── examples/
+│   ├── ai_prediction.vel
+│   ├── crypto_ops.vel
+│   ├── http_workflow.vel
+│   ├── jython_gui.vel
+│   ├── modern_gui.vel
+│   ├── parallel_processing.vel
+│   └── wayland_app.vel
+├── gui/
+│   ├── package.json
+│   └── src/
+│       ├── app.js
+│       ├── events.js
+│       ├── gui.js
+│       ├── index.html
+│       └── styles.css
+├── vel_modules/
+│   ├── ai_pytorch.vel
+│   ├── ai_tensorflow.vel
+│   ├── cpp_boost.vel
+│   ├── csharp_json.vel
+│   ├── db_sqlite.vel
+│   ├── gpu_cuda.vel
+│   ├── java_jython.vel
+│   ├── js_axios.vel
+│   ├── net_websocket.vel
+│   ├── perf_crypto.vel
+│   ├── perf_parallel.vel
+│   ├── python_requests.vel
+│   ├── ruby_httparty.vel
+│   ├── rust_flate2.vel
+│   ├── tauri_gui.vel
+│   └── wayland_gui.vel
+├── velvet-jni/
+│   ├── pom.xml
+│   └── src/
+│       └── main/
+│           └── java/
+│               └── com/
+│                   └── velvet/
+│                       ├── AiPytorchAdapter.java
+│                       ├── AiTensorflowAdapter.java
+│                       ├── AsyncAdapter.java
+│                       ├── CppBoostAdapter.java
+│                       ├── CsharpJsonAdapter.java
+│                       ├── DbSqliteAdapter.java
+│                       ├── GpuCudaAdapter.java
+│                       ├── JavaJythonAdapter.java
+│                       ├── JsAxiosAdapter.java
+│                       ├── LibraryManager.java
+│                       ├── ModuleAdapter.java
+│                       ├── NetWebsocketAdapter.java
+│                       ├── PerfCryptoAdapter.java
+│                       ├── PerfParallelAdapter.java
+│                       ├── PythonRequestsAdapter.java
+│                       ├── RubyHttpartyAdapter.java
+│                       ├── RustFlate2Adapter.java
+│                       ├── TauriGuiAdapter.java
+│                       ├── VelvetJNI.java
+│                       └── WaylandGuiAdapter.java
+└── vel.json
 
-## 1) Installation From Source
+## Installation
+
+### 1) Installation From Source
 
 
 Install Repo
@@ -78,7 +164,7 @@ Go to file
 cd Velvet-Programing-Laguage
 ```
 
-### FOR LINUX AND MACOS
+#### FOR LINUX AND MACOS
 
 
 Add Sudo Permission for script
@@ -94,7 +180,7 @@ Run Install.sh
 ```
 
 
-### FOR WINDOWS
+#### FOR WINDOWS
 
 Add Sudo Permission For Script
 
@@ -108,7 +194,7 @@ Run Install.ps1
 .\install.ps1
 ```
 
-## 2) Fast Installation
+### 2) Fast Installation
 
 #### For Linux
 ```bash
