@@ -1,0 +1,3 @@
+fn yaml_validate(yaml_str) {
+    return yaml_parse(yaml_str) != "error"
+}
