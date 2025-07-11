@@ -1,0 +1,21 @@
+# Example: Cryptographic operations with perf_crypto
+import perf_crypto
+import rust_flate2
+
+# Encrypt data with AES
+let secret_data = "Sensitive information"
+let key = "my_secure_key_123"
+let encrypted = perf_crypto.crypto_aes_encrypt(secret_data, key)
+say "AES encrypted: ", encrypted
+
+# Hash data with SHA-3
+let hash = perf_crypto.crypto_sha3(secret_data)
+say "SHA-3 hash: ", hash
+
+# Compress encrypted data
+let compressed = rust_flate2.zlib_compress(encrypted)
+say "Compressed encrypted data: ", compressed
+
+# Decompress and verify
+let decompressed = rust_flate2.zlib_decompress(compressed)
+say "Decompressed data: ", decompressed
