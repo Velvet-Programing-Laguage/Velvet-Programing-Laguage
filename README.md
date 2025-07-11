@@ -111,11 +111,14 @@ Run Install.ps1
 ## 2) Fast Installation
 
 #### For Linux
+```bash
 curl -OL https://raw.githubusercontent.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage/main/install.sh
 chmod +x install.sh
 ./install.sh
-
+```
 
 #### For Windows
+```bash
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 irm https://raw.githubusercontent.com/Velvet-Programing-Laguage/Velvet-Programing-Laguage/main/install.ps1 | iex
+```
