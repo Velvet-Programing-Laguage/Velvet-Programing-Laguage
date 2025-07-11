@@ -1,42 +1,64 @@
-pub mod parser;
-pub mod interpreter;
-pub mod stdlib_1;
-pub mod stdlib_2;
+mod ffi;
+mod interpreter;
+mod modules;
+mod parser;
+mod types;
 
-pub use parser::parse_velvet;
-pub use interpreter::{Interpreter, RuntimeValue};
+use ffi::*;
+use modules::*;
 
 #[no_mangle]
-pub extern "C" fn velvet_python_requests(url: *const c_char, method: *const c_char) -> *const c_char {
-    // Implementation in stdlib_1.rs
+pub extern "C" fn velvet_init(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = init(args_str);
+    CString::new(result).unwrap().into_raw()
 }
 
 #[no_mangle]
-pub extern "C" fn velvet_cpp_boost(action: *const c_char, input: *const c_char) -> *const c_char {
-    // Implementation in stdlib_1.rs
+pub extern "C" fn velvet_python_requests(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = python_requests(args_str);
+    CString::new(result).unwrap().into_raw()
 }
 
 #[no_mangle]
-pub extern "C" fn velvet_csharp_json(action: *const c_char, input: *const c_char) -> *const c_char {
-    // Implementation in stdlib_2.rs
+pub extern "C" fn velvet_cpp_boost(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = cpp_boost(args_str);
+    CString::new(result).unwrap().into_raw()
 }
 
 #[no_mangle]
-pub extern "C" fn velvet_ruby_httparty(url: *const c_char) -> *const c_char {
-    // Implementation in stdlib_2.rs
+pub extern "C" fn velvet_csharp_json(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = csharp_json(args_str);
+    CString::new(result).unwrap().into_raw()
 }
 
 #[no_mangle]
-pub extern "C" fn velvet_js_axios(url: *const c_char) -> *const c_char {
-    // Implementation in stdlib_2.rs
+pub extern "C" fn velvet_ruby_httparty(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = ruby_httparty(args_str);
+    CString::new(result).unwrap().into_raw()
 }
 
 #[no_mangle]
-pub extern "C" fn velvet_rust_flate2(action: *const c_char, data: *const c_char) -> *const c_char {
-    // Implementation in stdlib_1.rs
+pub extern "C" fn velvet_js_axios(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = js_axios(args_str);
+    CString::new(result).unwrap().into_raw()
 }
 
 #[no_mangle]
-pub extern "C" fn velvet_java_jython(script: *const c_char) -> *const c_char {
-    // Implementation in stdlib_2.rs
+pub extern "C" fn velvet_rust_flate2(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = rust_flate2(args_str);
+    CString::new(result).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn velvet_java_jython(args: *const c_char) -> *mut c_char {
+    let args_str = unsafe { CStr::from_ptr(args).to_str().unwrap_or("") };
+    let result = java_jython(args_str);
+    CString::new(result).unwrap().into_raw()
 }
