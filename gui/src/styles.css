@@ -1,121 +1,54 @@
-.window {
-    border: 1px solid #ccc;
-    border-radius: 8px;
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
     padding: 20px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 10px auto;
-    max-width: 100%;
-    box-sizing: border-box;
-    position: relative;
-    overflow: auto;
 }
 
-.window-title {
-    font-size: 24px;
-    margin: 0 0 20px 0;
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
     color: #333;
     text-align: center;
-    font-family: 'Arial', sans-serif;
-    font-weight: bold;
 }
 
-.window-button {
+.velvet-button {
+    position: absolute;
     padding: 10px 20px;
-    margin: 10px;
-    background-color: #007bff;
+    background: #007bff;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
-    font-size: 16px;
-    font-family: 'Arial', sans-serif;
+    transition: background 0.3s;
 }
 
-.window-button:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
+.velvet-button:hover {
+    background: #0056b3;
 }
 
-.window-button:active {
-    transform: scale(0.95);
-}
-
-.window-input {
+.velvet-dropdown {
+    position: absolute;
     padding: 8px;
-    margin: 10px;
+    border-radius: 5px;
     border: 1px solid #ccc;
-    border-radius: 4px;
-    width: calc(100% - 36px);
-    font-size: 16px;
-    font-family: 'Arial', sans-serif;
-    transition: border-color 0.2s ease-in-out;
+    background: white;
+    width: 200px;
 }
 
-.window-input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+.velvet-slider {
+    position: absolute;
+    width: 200px;
 }
 
-.window-label {
-    font-size: 16px;
-    margin: 10px;
-    color: #555;
-    font-family: 'Arial', sans-serif;
-}
-
-.window-menu {
-    background-color: #fff;
-    border-bottom: 1px solid #ccc;
-    padding: 5px 0;
-    margin-bottom: 10px;
-}
-
-.window-menu-item {
-    padding: 8px 15px;
-    margin: 0 5px;
-    cursor: pointer;
-    font-size: 14px;
-    font-family: 'Arial', sans-serif;
-    color: #333;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.window-menu-item:hover {
-    background-color: #e9ecef;
-}
-
-@media (max-width: 600px) {
-    .window {
-        padding: 10px;
-        margin: 5px;
-    }
-
-    .window-title {
-        font-size: 20px;
-    }
-
-    .window-button {
-        padding: 8px 16px;
-        font-size: 14px;
-        margin: 5px;
-    }
-
-    .window-input {
-        font-size: 14px;
-        margin: 5px;
-        width: calc(100% - 26px);
-    }
-
-    .window-label {
-        font-size: 14px;
-        margin: 5px;
-    }
-
-    .window-menu-item {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
+.velvet-slider::-webkit-slider-thumb {
+    background: #007bff;
+    border-radius: 10px;
 }
