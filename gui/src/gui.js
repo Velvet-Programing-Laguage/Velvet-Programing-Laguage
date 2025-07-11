@@ -32,18 +32,39 @@ export function renderGUI(props) {
         });
     }
 
+    if (props.dropdowns) {
+        props.dropdowns.forEach(dropdown => {
+            const select = document.createElement('select');
+            select.id = `dropdown-${dropdown.id}`;
+            select.className = 'window-input';
+            dropdown.options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.textContent = option.label;
+                select.appendChild(opt);
+            });
+            window.appendChild(select);
+        });
+    }
+
+    if (props.progressBars) {
+        props.progressBars.forEach(pb => {
+            const progress = document.createElement('progress');
+            progress.id = `progress-${pb.id}`;
+            progress.max = pb.max || 100;
+            progress.value = pb.value || 0;
+            progress.className = 'window-progress';
+            window.appendChild(progress);
+        });
+    }
+
     if (props.libraryActions) {
         props.libraryActions.forEach(action => {
-            if (action.type === 'axios_get') {
-                const btn = document.createElement('button');
-                btn.textContent = `Axios GET: ${action.url}`;
-                btn.className = 'window-button';
-                btn.addEventListener('click', async () => {
-                    const response = await axios.get(action.url);
-                    console.log('Axios response:', response.data);
-                });
-                window.appendChild(btn);
-            }
+            const btn = document.createElement('button');
+            btn.id = `action-${action.id}`;
+            btn.textContent = action.label || `Run ${action.type}`;
+            btn.className = 'window-button';
+            window.appendChild(btn);
         });
     }
 
@@ -58,6 +79,14 @@ export async function handleEvent(action) {
         } else if (act.type === 'lodash_transform') {
             const result = _.map(act.data, item => _.toUpper(item));
             console.log('Lodash transform:', result);
+            await invoke('handle_library_response', { id: act.id, data: JSON.stringify(result) });
+        } else if (act.type === 'axios_get') {
+            try {
+                const response = await axios.get(act.url);
+                await invoke('handle_library_response', { id: act.id, data: JSON.stringify(response.data) });
+            } catch (error) {
+                console.error('Axios error:', error);
+            }
         }
     }
 }
