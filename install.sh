@@ -45,12 +45,41 @@ install_system_deps() {
             # Kotlin
             sudo dnf install -y kotlin
             ;;
+        "bazzite"|"fedora-silverblue")
+            sudo rpm-ostree install -y curl git gcc python3 python3-pip ruby rubygems rust cargo golang java-11-openjdk nodejs npm elixir
+            # Crystal (not in default repos, use third-party)
+            curl -fsSL https://crystal-lang.org/install.sh | sudo bash
+            # Kotlin
+            sudo rpm-ostree install -y kotlin
+            echo "System reboot may be required to apply changes. Run 'sudo systemctl reboot' after installation."
+            ;;
         "arch"|"manjaro")
             sudo pacman -Syu --noconfirm curl git base-devel python python-pip ruby rust go jdk11-openjdk nodejs npm elixir
             # Crystal
             sudo pacman -S --noconfirm crystal
             # Kotlin
             sudo pacman -S --noconfirm kotlin
+            ;;
+        "gentoo")
+            sudo emerge --sync
+            sudo emerge -av net-misc/curl dev-vcs/git sys-devel/gcc dev-lang/python dev-lang/ruby dev-lang/rust dev-lang/go virtual/jdk nodejs dev-lang/elixir
+            # Crystal (not in default repos, use third-party)
+            sudo eselect repository enable crystal
+            sudo emerge -av dev-lang/crystal
+            # Kotlin
+            sudo emerge -av dev-lang/kotlin
+            ;;
+        "slackware")
+            sudo slackpkg update
+            sudo slackpkg install curl git gcc python3 ruby rust go jdk nodejs
+            # Crystal (manual installation)
+            curl -fsSL https://crystal-lang.org/install.sh | sudo bash
+            # Elixir (manual installation)
+            wget https://github.com/elixir-lang/elixir/releases/download/v1.15.7/elixir-otp-26.zip
+            unzip elixir-otp-26.zip -d /usr/local/elixir
+            echo 'export PATH="$PATH:/usr/local/elixir/bin"' >> ~/.bashrc
+            # Kotlin
+            sudo slackpkg install kotlin
             ;;
         "macos")
             brew update
@@ -73,16 +102,20 @@ set_permissions() {
     echo "Set executable permissions for install.sh"
 }
 
+# Function to clone Velvet repository
+clone_velvet_repo() {
+    echo "Cloning Velvet repository..."
+    if [ ! -d "Velvet-Programing-Language" ]; then
+        git clone https://github.com/Velvet-Programing-Laguage/Velvet-Programing-Language.git
+        cd Velvet-Programing-Language
+    else
+        cd Velvet-Programing-Language
+        git pull origin main
+    fi
+}
+
 # Function to compile and install Velvet
 install_velvet() {
-    # Clone or assume the Velvet project is in the current directory
-    if [ ! -d "velvet" ]; then
-        git clone https://github.com/andyh/velvet.git
-        cd velvet
-    else
-        cd velvet
-    fi
-
     # Compile Rust core
     echo "Compiling Velvet core (Rust)..."
     cargo build --release
@@ -120,6 +153,9 @@ detect_os
 
 # Install system dependencies
 install_system_deps
+
+# Clone Velvet repository
+clone_velvet_repo
 
 # Install Velvet
 install_velvet
