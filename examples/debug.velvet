@@ -1,0 +1,5 @@
+@ Debug example
+val counter: f64 = 0
+while counter < 5:
+    say counter
+    counter = counter + 1
