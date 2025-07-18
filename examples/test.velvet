@@ -1,0 +1,7 @@
+@ Test example
+test "check arithmetic":
+    val x: f64 = 5
+    if x + 5 == 10:
+        say "Arithmetic test passed"
+    else:
+        say "Arithmetic test failed"
