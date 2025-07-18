@@ -1,0 +1,28 @@
+@ Advanced example with module
+.> "module" <. "local"
+
+@ Define a function
+fun greet(name: str) -> str:
+    say "Hello, " + name
+    return name
+
+val x: f64 = 10
+if x > 5:
+    say "x > 5"
+else:
+    say "x <= 5"
+
+@ Loop over list
+for i in [1, 2, 3, 4]:
+    say i
+
+@ Error handling
+try:
+    say 1 / 0
+catch e:
+    say "Error: " + e
+
+@ Pattern matching
+match x:
+    10 | say "x is 10"
+    _  | say "x is other"
