@@ -1,0 +1,64 @@
+program = { SOI ~ statement* ~ EOI }
+
+statement = {
+    say
+  | val
+  | const
+  | fn
+  | if_stmt
+  | for_stmt
+  | while_stmt
+  | break_stmt
+  | continue_stmt
+  | return_stmt
+  | import_stmt
+  | try_stmt
+  | match_stmt
+  | expr_stmt
+  | test_stmt
+}
+
+say = { "say" ~ expr ~ NEWLINE }
+val = { "val" ~ IDENT ~ (":" ~ TYPE)? ~ ("=" ~ expr)? ~ NEWLINE }
+const = { "const" ~ IDENT ~ (":" ~ TYPE)? ~ "=" ~ expr ~ NEWLINE }
+return_stmt = { "return" ~ expr ~ NEWLINE }
+fn = { "fun" ~ IDENT ~ "(" ~ (IDENT ~ (":" ~ TYPE)? ~ ("," ~ IDENT ~ (":" ~ TYPE)?)*)? ~ ")" ~ (":" ~ TYPE)? ~ ":" ~ statement_block }
+if_stmt = { "if" ~ expr ~ ":" ~ statement_block ~ ("else" ~ ":" ~ statement_block)? }
+for_stmt = { "for" ~ IDENT ~ "in" ~ expr ~ ":" ~ statement_block }
+while_stmt = { "while" ~ expr ~ ":" ~ statement_block }
+break_stmt = { "break" ~ NEWLINE }
+continue_stmt = { "continue" ~ NEWLINE }
+try_stmt = { "try" ~ ":" ~ statement_block ~ "catch" ~ IDENT ~ ":" ~ statement_block }
+match_stmt = { "match" ~ expr ~ ":" ~ match_block }
+import_stmt = { ".>" ~ STRING ~ "<." ~ STRING ~ NEWLINE }
+test_stmt = { "test" ~ STRING ~ ":" ~ statement_block }
+
+expr_stmt = { expr ~ NEWLINE }
+expr = { logic }
+logic = { equality ~ (("and" | "or") ~ equality)* }
+equality = { comparison ~ (("==" | "!=") ~ comparison)* }
+comparison = { term ~ ((">" | ">=" | "<" | "<=") ~ term)* }
+term = { factor ~ (("+" | "-") ~ factor)* }
+factor = { unary ~ (("*" | "/") ~ unary)* }
+unary = { ("-" | "!") ~ unary | primary }
+primary = { STRING | NUMBER | BOOL | IDENT | call | list | index | "(" ~ expr ~ ")" }
+call = { IDENT ~ "(" ~ (expr ~ ("," ~ expr)*)? ~ ")" }
+list = { "[" ~ (expr ~ ("," ~ expr)*)? ~ "]" }
+index = { IDENT ~ "[" ~ expr ~ "]" }
+
+pattern = { IDENT | NUMBER | STRING | "_" }
+TYPE = { "str" | "f64" | "bool" | "list" | "fn" }
+
+statement_block = { NEWLINE ~ INDENT ~ statement+ ~ DEDENT }
+match_block = { NEWLINE ~ INDENT ~ (pattern ~ "|" ~ statement+)+ ~ DEDENT }
+
+STRING = { "\"" ~ (!"\"")* ~ "\"" }
+NUMBER = { "-"? ~ ASCII_DIGIT+ ("." ~ ASCII_DIGIT+)? }
+BOOL = { "true" | "false" }
+IDENT = { (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+NEWLINE = { "\n" | "\r\n" }
+INDENT = { "    " }
+DEDENT = { "" }
+
+COMMENT = _{ "@" ~ (!NEWLINE)* ~ NEWLINE }
+WHITESPACE = _{ " " | "\t" | NEWLINE | COMMENT }
