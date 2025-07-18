@@ -1,0 +1,4 @@
+@ Simple Velvet program
+say "Hello, Velvet!"
+val x: f64 = 42
+say x + 10
