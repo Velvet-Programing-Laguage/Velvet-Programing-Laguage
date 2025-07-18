@@ -1,7 +1,6 @@
 use pest::Parser;
 use pest_derive::Parser;
 use crate::ast::*;
-use std::collections::HashMap;
 
 #[derive(Parser)]
 #[grammar = "velvet.pest"]
@@ -13,7 +12,9 @@ pub fn parse(source: &str) -> Result<Vec<Statement>, String> {
     let mut statements = Vec::new();
     for pair in pairs {
         for inner_pair in pair.into_inner() {
-            statements.push(parse_statement(inner_pair)?);
+            if inner_pair.as_rule() != Rule::EOI {
+                statements.push(parse_statement(inner_pair)?);
+            }
         }
     }
     Ok(statements)
@@ -21,10 +22,7 @@ pub fn parse(source: &str) -> Result<Vec<Statement>, String> {
 
 fn parse_statement(pair: pest::iterators::Pair<Rule>) -> Result<Statement, String> {
     match pair.as_rule() {
-        Rule::say => {
-            let expr = parse_expr(pair.into_inner().next().unwrap())?;
-            Ok(Statement::Say(expr))
-        }
+        Rule::say => Ok(Statement::Say(parse_expr(pair.into_inner().next().unwrap())?)),
         Rule::val => {
             let mut inner = pair.into_inner();
             let ident = inner.next().unwrap().as_str().to_string();
@@ -39,23 +37,22 @@ fn parse_statement(pair: pest::iterators::Pair<Rule>) -> Result<Statement, Strin
             let expr = parse_expr(inner.next().unwrap())?;
             Ok(Statement::Const(ident, expr, type_anno))
         }
-        Rule::return_stmt => {
-            let expr = parse_expr(pair.into_inner().next().unwrap())?;
-            Ok(Statement::Return(expr))
-        }
+        Rule::return_stmt => Ok(Statement::Return(parse_expr(pair.into_inner().next().unwrap())?)),
         Rule::fn => {
             let mut inner = pair.into_inner();
             let ident = inner.next().unwrap().as_str().to_string();
             let mut params = Vec::new();
-            for param in inner.next().unwrap().into_inner() {
+            let param_pairs = inner.next().unwrap().into_inner();
+            for param in param_pairs {
                 if param.as_rule() == Rule::IDENT {
                     params.push((param.as_str().to_string(), "f64".to_string()));
                 } else if param.as_rule() == Rule::TYPE {
                     params.last_mut().unwrap().1 = param.as_str().to_string();
                 }
             }
+            let return_type = inner.next().map(|p| p.as_str().to_string());
             let body = parse_block(inner.next().unwrap())?;
-            Ok(Statement::Fun(ident, params, body))
+            Ok(Statement::Fun(ident, params, return_type, body))
         }
         Rule::if_stmt => {
             let mut inner = pair.into_inner();
@@ -98,9 +95,11 @@ fn parse_statement(pair: pest::iterators::Pair<Rule>) -> Result<Statement, Strin
             }
             Ok(Statement::Match(expr, branches))
         }
-        Rule::import => {
-            let module = pair.into_inner().next().unwrap().as_str().trim_matches('"').to_string();
-            Ok(Statement::Import(module))
+        Rule::import_stmt => {
+            let mut inner = pair.into_inner();
+            let module = inner.next().unwrap().as_str().trim_matches('"').to_string();
+            let source = inner.next().unwrap().as_str().trim_matches('"').to_string();
+            Ok(Statement::Import(module, source))
         }
         Rule::test_stmt => {
             let mut inner = pair.into_inner();
@@ -108,10 +107,7 @@ fn parse_statement(pair: pest::iterators::Pair<Rule>) -> Result<Statement, Strin
             let body = parse_block(inner.next().unwrap())?;
             Ok(Statement::Test(name, body))
         }
-        Rule::expr_stmt => {
-            let expr = parse_expr(pair.into_inner().next().unwrap())?;
-            Ok(Statement::Expr(expr))
-        }
+        Rule::expr_stmt => Ok(Statement::Expr(parse_expr(pair.into_inner().next().unwrap())?)),
         _ => Err(format!("Unexpected rule: {:?}", pair.as_rule())),
     }
 }
@@ -156,11 +152,17 @@ fn parse_expr(pair: pest::iterators::Pair<Rule>) -> Result<Expr, String> {
                     }
                     Ok(Expr::List(elements))
                 }
+                Rule::index => {
+                    let mut inner = inner.into_inner();
+                    let ident = inner.next().unwrap().as_str().to_string();
+                    let index = parse_expr(inner.next().unwrap())?;
+                    Ok(Expr::Index(ident, Box::new(index)))
+                }
                 Rule::expr => parse_expr(inner),
-                _ => Err(format!("Unexpected primary rule: {:?}", inner.as_rule())),
+                _ => Err(format!("Unexpected primary: {:?}", inner.as_rule())),
             }
         }
-        _ => Err(format!("Unexpected expr rule: {:?}", pair.as_rule())),
+        _ => Err(format!("Unexpected expr: {:?}", pair.as_rule())),
     }
 }
 
