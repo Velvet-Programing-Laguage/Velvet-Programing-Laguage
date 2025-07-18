@@ -1,0 +1,9 @@
+@ Advanced test with module
+.> "module" <. "local"
+
+test "module square function":
+    val result: f64 = square(4)
+    if result == 16:
+        say "Square function passed"
+    else:
+        say "Square function failed"
