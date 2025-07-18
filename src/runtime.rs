@@ -6,7 +6,7 @@ pub enum Value {
     Number(f64),
     Bool(bool),
     List(Vec<Value>),
-    Function(Vec<(String, String)>, Vec<super::ast::Statement>),
+    Function(Vec<(String, String)>, Option<String>, Vec<super::ast::Statement>),
     None,
 }
 
@@ -21,7 +21,7 @@ impl Value {
     pub fn as_bool(&self) -> Result<bool, String> {
         match self {
             Value::Bool(b) => Ok(*b),
-            _ => Err(format!("Expected boolean, got {:?}", self)),
+            _ => Err(format!("Expected bool, got {:?}", self)),
         }
     }
 
@@ -47,7 +47,7 @@ impl fmt::Display for Value {
             Value::Number(n) => write!(f, "{}", n),
             Value::Bool(b) => write!(f, "{}", b),
             Value::List(l) => write!(f, "{:?}", l),
-            Value::Function(_, _) => write!(f, "<function>"),
+            Value::Function(_, _, _) => write!(f, "<fn>"),
             Value::None => write!(f, "none"),
         }
     }
