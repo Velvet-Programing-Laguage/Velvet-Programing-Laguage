@@ -3,7 +3,7 @@ pub enum Statement {
     Say(Expr),
     Val(String, Option<Expr>, Option<String>),
     Const(String, Expr, Option<String>),
-    Fun(String, Vec<(String, String)>, Vec<Statement>),
+    Fun(String, Vec<(String, String)>, Option<String>, Vec<Statement>),
     If(Expr, Vec<Statement>, Option<Vec<Statement>>),
     For(String, Expr, Vec<Statement>),
     While(Expr, Vec<Statement>),
@@ -13,7 +13,7 @@ pub enum Statement {
     Match(Expr, Vec<(String, Vec<Statement>)>),
     Expr(Expr),
     Return(Expr),
-    Import(String),
+    Import(String, String),
     Test(String, Vec<Statement>),
 }
 
@@ -27,4 +27,5 @@ pub enum Expr {
     Unary(String, Box<Expr>),
     Call(String, Vec<Expr>),
     List(Vec<Expr>),
+    Index(String, Box<Expr>),
 }
