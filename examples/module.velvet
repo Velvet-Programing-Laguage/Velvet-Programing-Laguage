@@ -1,0 +1,5 @@
+@ Module with constants and functions
+const PI: f64 = 3.14159
+
+fun square(n: f64) -> f64:
+    return n * n
