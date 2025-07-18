@@ -1,0 +1,8 @@
+@ Basic arithmetic test
+test "basic arithmetic":
+    val x: f64 = 2
+    val y: f64 = 3
+    if x + y == 5:
+        say "Basic arithmetic passed"
+    else:
+        say "Basic arithmetic failed"
